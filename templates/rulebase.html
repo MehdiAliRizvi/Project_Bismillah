@@ -32,7 +32,7 @@
         <div id="message" class="alert" style="display: none;"></div>
 
         <!-- Add the form tag here -->
-        <form action="{{ url_for('rulebase') }}" method="POST" id="rule-form">
+        <form action="{{ url_for('rulebase') }}" method="POST" id="myForm">
             <!-- Disease Codes Section -->
             <div id="disease-codes">
                 <h4>Disease Codes</h4>
@@ -175,14 +175,29 @@
             }
         }
 
-        // Initialize condition fields based on default selected condition type
         function initializeConditionFields() {
-            $('.condition-type').each(function () {
-                const selectedType = $(this).val();
-                const conditionRow = $(this).closest('.condition-group');
-                toggleConditionFields(conditionRow, selectedType);
-            });
+    $('.condition-type').each(function () {
+        const conditionGroup = $(this).closest('.condition-group');
+        if ($(this).val() === 'range') {
+            conditionGroup.find('.range-condition').show();
+            conditionGroup.find('.comparison-condition').hide();
+        } else {
+            conditionGroup.find('.range-condition').hide();
+            conditionGroup.find('.comparison-condition').show();
         }
+    });
+
+    $('.condition-type').change(function () {
+        const conditionGroup = $(this).closest('.condition-group');
+        if ($(this).val() === 'range') {
+            conditionGroup.find('.range-condition').show();
+            conditionGroup.find('.comparison-condition').hide();
+        } else {
+            conditionGroup.find('.range-condition').hide();
+            conditionGroup.find('.comparison-condition').show();
+        }
+    });
+}
 
         // Add new disease code
         $('#add-disease-code').click(function () {
@@ -424,24 +439,10 @@
             });
         }
 
-        // Function to initialize condition fields
-        function initializeConditionFields() {
-            $('.condition-type').change(function () {
-                const conditionGroup = $(this).closest('.condition-group');
-                if ($(this).val() === 'range') {
-                    conditionGroup.find('.range-condition').show();
-                    conditionGroup.find('.comparison-condition').hide();
-                } else {
-                    conditionGroup.find('.range-condition').hide();
-                    conditionGroup.find('.comparison-condition').show();
-                }
-            });
-        }
-
-        // Initialize condition fields on page load
         initializeConditionFields();
     });
 </script>
+
 </body>
 </html>
 

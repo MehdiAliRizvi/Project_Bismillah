@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from flask import Flask, request, jsonify, render_template
 import datetime
-import os
+import logging
 
 app = Flask(__name__)
 
@@ -18,6 +18,7 @@ class RulebaseApp:
         self.collection = db.get_collection('Rulebase')
 
     def save_rule(self, rule_data):
+        logging.info(f'Saving rule data: {rule_data}')  # Log the data being saved
         self.collection.insert_one(rule_data)
 
     def get_all_rules(self):
@@ -53,6 +54,13 @@ def rulebase():
 
             # Prepare the list to store diseases and their rules
             rules_data = []
+
+
+            # Log the received data
+            app.logger.info(f'Received disease names: {disease_names}')
+            app.logger.info(f'Received disease codes: {disease_codes}')
+            app.logger.info(f'Received conditions: {conditions}')
+
 
             # Iterate over diseases to create the nested structure
             for i in range(len(disease_names)):
@@ -117,6 +125,11 @@ def rulebase():
                 # Append the disease entry to rules data
                 rules_data.append(disease_entry)
 
+
+            # Log the rules data before saving
+            app.logger.info(f'Rules data to be saved: {rules_data}')
+
+
             # Insert rules data into MongoDB
             for rule in rules_data:
                 rulebase_app.save_rule(rule)
@@ -139,7 +152,7 @@ def lab_values():
             values = request.form.getlist('value')
             units = request.form.getlist('unit')
             valid_untils = request.form.getlist('valid-until')
-
+ 
             lab_values_data = []
             for i in range(len(parameters)):
                 lab_value_data = {
@@ -149,7 +162,7 @@ def lab_values():
                     'valid_until': valid_untils[i]
                 }
                 lab_values_data.append(lab_value_data)
-
+ 
             # Check if a document with the same patient ID already exists
             existing_patient = lab_input_user_values_collection.find_one({'patient_id': patient_id})
             if existing_patient:
@@ -167,14 +180,14 @@ def lab_values():
                     'lab_values': lab_values_data
                 }
                 lab_input_user_values_collection.insert_one(new_patient_data)
-
+ 
             # Evaluate the lab values against the rules
             matching_diseases = evaluate_lab_values(age, gender, lab_values_data)
-
+ 
             if matching_diseases:
                 print(matching_diseases)
                 return jsonify({'status': 'success', 'message': 'Lab values saved and evaluated successfully!', 'results': matching_diseases})
-                
+               
             else:
                 return jsonify({'status': 'success', 'message': 'Lab values saved successfully! No disease match found.', 'results': []})
         except Exception as e:
@@ -182,17 +195,17 @@ def lab_values():
             print(f"Error occurred while saving lab values: {e}")
             return jsonify({'status': 'error', 'message': str(e)})
     return render_template('lab_values.html')
-
-
+ 
+ 
 def evaluate_lab_values(patient_age, patient_gender, lab_values):
-    
+   
     try:
         # Fetch all rules from the database
         rules = rulebase_app.get_all_rules()
         print(rules)
-
+ 
         matching_diseases = []
-
+ 
         for rule in rules:
             disease_name = rule['disease_name']
             disease_code = rule['disease_code']
@@ -209,18 +222,18 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
                         'matching_rule': rule_entry
                     })
                     break  # Since rules are OR-ed, we can stop checking further rules for this disease
-
+ 
         return matching_diseases
     except Exception as e:
         print(f"Error occurred while evaluating lab values: {e}")
         return []
-
+ 
 def evaluate_condition(condition, patient_age, patient_gender, lab_values):
     if not (condition['age_min'] <= patient_age <= condition['age_max']):
         return False
     if condition['gender'] != 'all' and condition['gender'] != patient_gender:
         return False
-
+ 
     for lab_value in lab_values:
         if lab_value['parameter_name'].lower() == condition['parameter'].lower() and lab_value['valid_until'] >= str(datetime.date.today()):
             if condition['type'] == 'range':
@@ -231,7 +244,7 @@ def evaluate_condition(condition, patient_age, patient_gender, lab_values):
                     return False
             return True
     return False
-
+ 
 def compare_values(value, operator, comparison_value):
     if operator == 'greater':
         return value > comparison_value
@@ -244,7 +257,7 @@ def compare_values(value, operator, comparison_value):
     elif operator == 'less or equal':
         return value <= comparison_value
     return False
-
+ 
 if __name__ == '__main__':
     rules = rulebase_app.get_all_rules()
     # print(rules)
