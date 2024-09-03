@@ -43,7 +43,7 @@ except Exception as e:
 def index():
     return render_template('index.html')
 
-@app.route('/rulebase', methods=['GET', 'POST'])
+@app.route('/rulebase', methods=['GET', 'POST'])  # This is the rulebase.
 def rulebase():
     if request.method == 'POST':
         try:
@@ -77,13 +77,35 @@ def rulebase():
                     }
 
                     # Extract all conditions for this rule
-                    for condition_index in range(len(conditions[f'conditions[{rule_index}][]'])):
-                        condition_type = conditions[f'conditions[{rule_index}][]'][condition_index]
-                        parameter = conditions[f'parameters[{rule_index}][]'][condition_index]
-                        unit = conditions[f'units[{rule_index}][]'][condition_index]
-                        age_min = conditions[f'age_min[{rule_index}][]'][condition_index]
-                        age_max = conditions[f'age_max[{rule_index}][]'][condition_index]
-                        gender = conditions[f'genders[{rule_index}][]'][condition_index]
+                    condition_keys = [
+                        f'conditions[{rule_index}][]',
+                        f'parameters[{rule_index}][]',
+                        f'units[{rule_index}][]',
+                        f'age_min[{rule_index}][]',
+                        f'age_max[{rule_index}][]',
+                        f'genders[{rule_index}][]',
+                        f'min_values[{rule_index}][]',
+                        f'max_values[{rule_index}][]',
+                        f'operators[{rule_index}][]',
+                        f'comparison_values[{rule_index}][]',
+                        f'time_values[{rule_index}][]',
+                        f'operators_time[{rule_index}][]',
+                        f'comparison_time_values[{rule_index}][]'
+                    ]
+
+                    # Find the maximum length of the condition lists
+                    max_length = max([len(conditions[key]) for key in condition_keys if key in conditions])
+
+                    # Pad all lists to match the maximum length
+                    padded_conditions = {key: (conditions[key] + [None] * (max_length - len(conditions[key])) if key in conditions else [None] * max_length) for key in condition_keys}
+
+                    for condition_index in range(max_length):
+                        condition_type = padded_conditions[f'conditions[{rule_index}][]'][condition_index]
+                        parameter = padded_conditions[f'parameters[{rule_index}][]'][condition_index]
+                        unit = padded_conditions[f'units[{rule_index}][]'][condition_index]
+                        age_min = padded_conditions[f'age_min[{rule_index}][]'][condition_index]
+                        age_max = padded_conditions[f'age_max[{rule_index}][]'][condition_index]
+                        gender = padded_conditions[f'genders[{rule_index}][]'][condition_index]
 
                         condition_entry = {
                             'type': condition_type,
@@ -96,28 +118,29 @@ def rulebase():
 
                         # Add fields based on condition type
                         if condition_type == 'range':
-                            min_value = conditions[f'min_values[{rule_index}][]'][condition_index]
-                            max_value = conditions[f'max_values[{rule_index}][]'][condition_index]
-                            condition_entry.update({
-                                'min_value': float(min_value) if min_value else None,
-                                'max_value': float(max_value) if max_value else None
-                            })
+                            min_value = padded_conditions[f'min_values[{rule_index}][]'][condition_index]
+                            max_value = padded_conditions[f'max_values[{rule_index}][]'][condition_index]
+                            if min_value:
+                                condition_entry['min_value'] = float(min_value)
+                            if max_value:
+                                condition_entry['max_value'] = float(max_value)
                         elif condition_type == 'comparison':
-                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
-                            comparison_value = conditions[f'comparison_values[{rule_index}][]'][condition_index]
-                            condition_entry.update({
-                                'operator': operator,
-                                'comparison_value': float(comparison_value) if comparison_value else None
-                            })
+                            operator = padded_conditions[f'operators[{rule_index}][]'][condition_index]
+                            comparison_value = padded_conditions[f'comparison_values[{rule_index}][]'][condition_index]
+                            if operator:
+                                condition_entry['operator'] = operator
+                            if comparison_value:
+                                condition_entry['comparison_value'] = float(comparison_value)
                         elif condition_type == 'time-dependent':
-                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
-                            comparison_value = conditions[f'comparison_values[{rule_index}][]'][condition_index]
-                            time = conditions[f'time_values[{rule_index}][]'][condition_index]
-                            condition_entry.update({
-                                'operator': operator,
-                                'comparison_value': float(comparison_value) if comparison_value else None,
-                                'time': time
-                            })
+                            operator_time = padded_conditions[f'operators_time[{rule_index}][]'][condition_index]
+                            comparison_time_value = padded_conditions[f'comparison_time_values[{rule_index}][]'][condition_index]
+                            time = padded_conditions[f'time_values[{rule_index}][]'][condition_index]
+                            if operator_time:
+                                condition_entry['operator_time'] = operator_time
+                            if comparison_time_value:
+                                condition_entry['comparison_time_value'] = float(comparison_time_value)
+                            if time:
+                                condition_entry['time'] = time
 
                         # Log the condition entry
                         app.logger.info(f'Condition entry: {condition_entry}')
@@ -148,6 +171,7 @@ def rulebase():
             return jsonify({'message': f'Error adding data: {str(e)}'}), 500
 
     return render_template('rulebase.html')  # Replace with your form template name
+
 
 
 

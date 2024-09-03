@@ -68,8 +68,7 @@
                                     <select class="form-control condition-type" id="condition-type-1-1" name="conditions[1][]">
                                         <option value="range">Range Condition</option>
                                         <option value="comparison">Comparison Condition</option>
-                                        <option value="time">Time Dependent Condition</option>
-
+                                        <option value="time-dependent">Time Dependent Condition</option>
 
                                     </select>
                                 </div>
@@ -92,8 +91,8 @@
                                     <input type="number" class="form-control max-value" id="max-value-1-1" name="max_values[1][]" placeholder="Enter maximum value" step="0.01">
                                 </div>
                                 <div class="form-group flex-item comparison-condition" style="display: none;">
-                                    <label for="operator-1-1">Operator:</label>
-                                    <select class="form-control operator" id="operator-1-1" name="operators[1][]">
+                                    <label for="operator-comparison-1-1">Operator:</label>
+                                    <select class="form-control operator" id="operator-comparison-1-1" name="operators[1][]">
                                         <option value="greater">></option>
                                         <option value="less"><</option>
                                         <option value="equal">=</option>
@@ -102,11 +101,30 @@
                                     </select>
                                 </div>
                                 <div class="form-group flex-item comparison-condition" style="display: none;">
-                                    <label for="value-1-1">Value:</label>
-                                    <input type="number" class="form-control comparison-value" id="value-1-1" name="comparison_values[1][]" placeholder="Enter value">
+                                    <label for="value-comparison-1-1">Value:</label>
+                                    <input type="number" class="form-control comparison-value" id="value-comparison-1-1" name="comparison_values[1][]" placeholder="Enter value">
                                 </div>
-
-
+                                
+                                <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                    <label for="time-1-1">Time:</label>
+                                    <input type="number" class="form-control time-value" id="time-1-1" name="time_values[1][]" placeholder="Enter time">
+                                </div>
+                                <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                    <label for="operator-time-1-1">Operator:</label>
+                                    <select class="form-control operator" id="operator-time-1-1" name="operators_time[1][]">
+                                        <option value="greater">></option>
+                                        <option value="less"><</option>
+                                        <option value="equal">=</option>
+                                        <option value="greater or equal">>=</option>
+                                        <option value="less or equal"><=</option>
+                                    </select>
+                                </div>
+                                <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                    <label for="value-time-1-1">Value:</label>
+                                    <input type="number" class="form-control comparison-value" id="value-time-1-1" name="comparison_time_values[1][]" placeholder="Enter value">
+                                </div>
+                                
+                                 <!-- //////  -->
 
                                 <div class="form-group flex-item">
                                     <label for="unit-1-1">Unit:</label>
@@ -162,46 +180,62 @@
 
     <!-- JavaScript to Handle Dynamic Form Elements -->
     <script>
-    $(document).ready(function () {
-        let ruleCount = 1;
-        let conditionCount = 1;
-        let diseaseCodeCount = 1;
+$(document).ready(function () {
+    let ruleCount = 1;
+    let conditionCount = 1;
+    let diseaseCodeCount = 1;
 
-        function toggleConditionFields(conditionRow, selectedType) {
-            if (selectedType === 'range') {
-                conditionRow.find('.range-condition').show();
-                conditionRow.find('.comparison-condition').hide();
-                conditionRow.find('.comparison-value').removeAttr('required');
-            } else if (selectedType === 'comparison') {
-                conditionRow.find('.comparison-condition').show();
-                conditionRow.find('.range-condition').hide();
-                conditionRow.find('.comparison-value').attr('required', 'required');
+    function toggleConditionFields(conditionRow, selectedType) {
+        if (selectedType === 'range') {
+            conditionRow.find('.range-condition').show();
+            conditionRow.find('.comparison-condition, .time-dependent-condition').hide();
+            conditionRow.find('.comparison-value, .time-value').removeAttr('required');
+        } else if (selectedType === 'comparison') {
+            conditionRow.find('.comparison-condition').show();
+            conditionRow.find('.range-condition, .time-dependent-condition').hide();
+            conditionRow.find('.comparison-value').attr('required', 'required');
+            conditionRow.find('.time-value').removeAttr('required');
+        } else if (selectedType === 'time-dependent') {
+            conditionRow.find('.time-dependent-condition').show();
+            conditionRow.find('.range-condition, .comparison-condition').hide();
+            conditionRow.find('.time-value').attr('required', 'required');
+            conditionRow.find('.comparison-value').attr('required', 'required');
+        }
+    }
+
+    function initializeConditionFields() {
+        $('.condition-type').each(function () {
+            const conditionGroup = $(this).closest('.condition-group');
+            if ($(this).val() === 'range') {
+                conditionGroup.find('.range-condition').show();
+                conditionGroup.find('.comparison-condition, .time-dependent-condition').hide();
+            } else if ($(this).val() === 'comparison') {
+                conditionGroup.find('.range-condition, .time-dependent-condition').hide();
+                conditionGroup.find('.comparison-condition').show();
+            } else if ($(this).val() === 'time-dependent') {
+                conditionGroup.find('.range-condition, .comparison-condition').hide();
+                conditionGroup.find('.time-dependent-condition').show();
             }
-        }
+        });
 
-function initializeConditionFields() {
-    $('.condition-type').each(function () {
-        const conditionGroup = $(this).closest('.condition-group');
-        if ($(this).val() === 'range') {
-            conditionGroup.find('.range-condition').show();
-            conditionGroup.find('.comparison-condition').hide();
-        } else {
-            conditionGroup.find('.range-condition').hide();
-            conditionGroup.find('.comparison-condition').show();
-        }
-    });
+        $('.condition-type').change(function () {
+            const conditionGroup = $(this).closest('.condition-group');
+            if ($(this).val() === 'range') {
+                conditionGroup.find('.range-condition').show();
+                conditionGroup.find('.comparison-condition, .time-dependent-condition').hide();
+            } else if ($(this).val() === 'comparison') {
+                conditionGroup.find('.range-condition, .time-dependent-condition').hide();
+                conditionGroup.find('.comparison-condition').show();
+            } else if ($(this).val() === 'time-dependent') {
+                conditionGroup.find('.range-condition, .comparison-condition').hide();
+                conditionGroup.find('.time-dependent-condition').show();
+            }
+        });
+    }
 
-    $('.condition-type').change(function () {
-        const conditionGroup = $(this).closest('.condition-group');
-        if ($(this).val() === 'range') {
-            conditionGroup.find('.range-condition').show();
-            conditionGroup.find('.comparison-condition').hide();
-        } else {
-            conditionGroup.find('.range-condition').hide();
-            conditionGroup.find('.comparison-condition').show();
-        }
-    });
-}
+
+
+
         // Add new disease code
         $('#add-disease-code').click(function () {
             diseaseCodeCount++;
@@ -224,115 +258,28 @@ function initializeConditionFields() {
             updateRemoveButtons();
         });
 
-        // Add new rule
-        $('#add-rule').click(function () {
-            ruleCount++;
-            conditionCount = 1;
-            const ruleHtml = `
-                <div class="rule-group" id="rule-${ruleCount}">
-                    <h5>Rule ${ruleCount}</h5>
-                    <div class="conditions" id="conditions-${ruleCount}">
-                        <div class="condition-group" id="condition-${ruleCount}-1">
-                            <h6>Condition 1</h6>
-                            <div class="flex-container">
-                                <div class="form-group flex-item">
-                                    <label for="condition-type-${ruleCount}-1">Condition Type:</label>
-                                    <select class="form-control condition-type" id="condition-type-${ruleCount}-1" name="conditions[${ruleCount}][]">
-                                        <option value="range">Range Condition</option>
-                                        <option value="comparison">Comparison Condition</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="parameter-${ruleCount}-1">Parameter:</label>
-                                    <select class="form-control parameter" id="parameter-${ruleCount}-1" name="parameters[${ruleCount}][]">
-                                        <option value="Hemoglobin">Hemoglobin</option>
-                                        <option value="Glucose">Glucose</option>
-                                        <option value="Potassium">Potassium</option>
-                                        <option value="gl">GL</option>
-                                        <option value="Sodium">Sodium</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item range-condition" style="display: none;">
-                                    <label for="min-value-${ruleCount}-1">Minimum Value:</label>
-                                    <input type="number" class="form-control min-value" id="min-value-${ruleCount}-1" name="min_values[${ruleCount}][]" placeholder="Enter minimum value">
-                                </div>
-                                <div class="form-group flex-item range-condition" style="display: none;">
-                                    <label for="max-value-${ruleCount}-1">Maximum Value:</label>
-                                    <input type="number" class="form-control max-value" id="max-value-${ruleCount}-1" name="max_values[${ruleCount}][]" placeholder="Enter maximum value">
-                                </div>
-                                <div class="form-group flex-item comparison-condition" style="display: none;">
-                                    <label for="operator-${ruleCount}-1">Operator:</label>
-                                    <select class="form-control operator" id="operator-${ruleCount}-1" name="operators[${ruleCount}][]">
-                                        <option value="greater">></option>
-                                        <option value="less"><</option>
-                                        <option value="equal">=</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item comparison-condition" style="display: none;">
-                                    <label for="value-${ruleCount}-1">Value:</label>
-                                    <input type="number" class="form-control comparison-value" id="value-${ruleCount}-1" name="comparison_values[${ruleCount}][]" placeholder="Enter value">
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="unit-${ruleCount}-1">Unit:</label>
-                                    <select class="form-control unit" id="unit-${ruleCount}-1" name="units[${ruleCount}][]">
-                                        <option value="mg/dL">mg/dL</option>
-                                        <option value="g/dL">g/dL</option>
-                                        <option value="mmHg">mmHg</option>
-                                        <option value="%">%</option>
-                                        <option value="bpm">bpm</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="age-min-${ruleCount}-1">Age Range:</label>
-                                    <input type="number" class="form-control age-min" id="age-min-${ruleCount}-1" name="age_min[${ruleCount}][]" placeholder="From Age" min="0" required>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="age-max-${ruleCount}-1">Age Range:</label>
-                                    <input type="number" class="form-control age-max" id="age-max-${ruleCount}-1" name="age_max[${ruleCount}][]" placeholder="To Age" min="0" required>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="gender-${ruleCount}-1">Gender:</label>
-                                    <select class="form-control gender" id="gender-${ruleCount}-1" name="genders[${ruleCount}][]" required>
-                                        <option value="all">ALL</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="center-buttons">
-                                <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="center-buttons">
-                        <button type="button" class="btn btn-primary add-condition" data-rule="${ruleCount}">Add Condition</button>
-                        <button type="button" class="btn btn-danger remove-rule" style="display: block;">Remove Rule</button>
-                    </div>
-                </div>
-            `;
-            $('#rules').append(ruleHtml);
-            updateRemoveButtons();
-            initializeConditionFields();
-        });
-
-        // Add new condition
-        $(document).on('click', '.add-condition', function () {
-            const ruleId = $(this).data('rule');
-            conditionCount++;
-            const conditionHtml = `
-                <div class="condition-group" id="condition-${ruleId}-${conditionCount}">
-                    <h6>Condition ${conditionCount}</h6>
+// Add new rule
+$('#add-rule').click(function () {
+    ruleCount++;
+    conditionCount = 1;
+    const ruleHtml = `
+        <div class="rule-group" id="rule-${ruleCount}">
+            <h5>Rule ${ruleCount}</h5>
+            <div class="conditions" id="conditions-${ruleCount}">
+                <div class="condition-group" id="condition-${ruleCount}-1">
+                    <h6>Condition 1</h6>
                     <div class="flex-container">
                         <div class="form-group flex-item">
-                            <label for="condition-type-${ruleId}-${conditionCount}">Condition Type:</label>
-                            <select class="form-control condition-type" id="condition-type-${ruleId}-${conditionCount}" name="conditions[${ruleId}][]">
+                            <label for="condition-type-${ruleCount}-1">Condition Type:</label>
+                            <select class="form-control condition-type" id="condition-type-${ruleCount}-1" name="conditions[${ruleCount}][]">
                                 <option value="range">Range Condition</option>
                                 <option value="comparison">Comparison Condition</option>
+                                <option value="time-dependent">Time-Dependent Condition</option> 
                             </select>
                         </div>
                         <div class="form-group flex-item">
-                            <label for="parameter-${ruleId}-${conditionCount}">Parameter:</label>
-                            <select class="form-control parameter" id="parameter-${ruleId}-${conditionCount}" name="parameters[${ruleId}][]">
+                            <label for="parameter-${ruleCount}-1">Parameter:</label>
+                            <select class="form-control parameter" id="parameter-${ruleCount}-1" name="parameters[${ruleCount}][]">
                                 <option value="Hemoglobin">Hemoglobin</option>
                                 <option value="Glucose">Glucose</option>
                                 <option value="Potassium">Potassium</option>
@@ -341,28 +288,46 @@ function initializeConditionFields() {
                             </select>
                         </div>
                         <div class="form-group flex-item range-condition" style="display: none;">
-                            <label for="min-value-${ruleId}-${conditionCount}">Minimum Value:</label>
-                            <input type="number" class="form-control min-value" id="min-value-${ruleId}-${conditionCount}" name="min_values[${ruleId}][]" placeholder="Enter minimum value">
+                            <label for="min-value-${ruleCount}-1">Minimum Value:</label>
+                            <input type="number" class="form-control min-value" id="min-value-${ruleCount}-1" name="min_values[${ruleCount}][]" placeholder="Enter minimum value">
                         </div>
                         <div class="form-group flex-item range-condition" style="display: none;">
-                            <label for="max-value-${ruleId}-${conditionCount}">Maximum Value:</label>
-                            <input type="number" class="form-control max-value" id="max-value-${ruleId}-${conditionCount}" name="max_values[${ruleId}][]" placeholder="Enter maximum value">
+                            <label for="max-value-${ruleCount}-1">Maximum Value:</label>
+                            <input type="number" class="form-control max-value" id="max-value-${ruleCount}-1" name="max_values[${ruleCount}][]" placeholder="Enter maximum value">
                         </div>
                         <div class="form-group flex-item comparison-condition" style="display: none;">
-                            <label for="operator-${ruleId}-${conditionCount}">Operator:</label>
-                            <select class="form-control operator" id="operator-${ruleId}-${conditionCount}" name="operators[${ruleId}][]">
+                            <label for="operator-comparison-${ruleCount}-1">Operator:</label>
+                            <select class="form-control operator" id="operator-comparison-${ruleCount}-1" name="operators[${ruleCount}][]">
                                 <option value="greater">></option>
                                 <option value="less"><</option>
                                 <option value="equal">=</option>
                             </select>
                         </div>
                         <div class="form-group flex-item comparison-condition" style="display: none;">
-                            <label for="value-${ruleId}-${conditionCount}">Value:</label>
-                            <input type="number" class="form-control comparison-value" id="value-${ruleId}-${conditionCount}" name="comparison_values[${ruleId}][]" placeholder="Enter value">
+                            <label for="value-comparison-${ruleCount}-1">Value:</label>
+                            <input type="number" class="form-control comparison-value" id="value-comparison-${ruleCount}-1" name="comparison_values[${ruleCount}][]" placeholder="Enter value">
+                        </div>
+                        <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                            <label for="time-${ruleCount}-1">Time:</label>
+                            <input type="number" class="form-control time-value" id="time-${ruleCount}-1" name="time_values[${ruleCount}][]" placeholder="Enter time">
+                        </div>
+                        <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                            <label for="operator-time-${ruleCount}-1">Operator:</label>
+                            <select class="form-control operator" id="operator-time-${ruleCount}-1" name="operators_time[${ruleCount}][]">
+                                <option value="greater">></option>
+                                <option value="less"><</option>
+                                <option value="equal">=</option>
+                                <option value="greater or equal">>=</option>
+                                <option value="less or equal"><=</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                            <label for="value-time-${ruleCount}-1">Value:</label>
+                            <input type="number" class="form-control comparison-value" id="value-time-${ruleCount}-1" name="comparison_time_values[${ruleCount}][]" placeholder="Enter value">
                         </div>
                         <div class="form-group flex-item">
-                            <label for="unit-${ruleId}-${conditionCount}">Unit:</label>
-                            <select class="form-control unit" id="unit-${ruleId}-${conditionCount}" name="units[${ruleId}][]">
+                            <label for="unit-${ruleCount}-1">Unit:</label>
+                            <select class="form-control unit" id="unit-${ruleCount}-1" name="units[${ruleCount}][]">
                                 <option value="mg/dL">mg/dL</option>
                                 <option value="g/dL">g/dL</option>
                                 <option value="mmHg">mmHg</option>
@@ -371,16 +336,16 @@ function initializeConditionFields() {
                             </select>
                         </div>
                         <div class="form-group flex-item">
-                            <label for="age-min-${ruleId}-${conditionCount}">Age Range:</label>
-                            <input type="number" class="form-control age-min" id="age-min-${ruleId}-${conditionCount}" name="age_min[${ruleId}][]" placeholder="From Age" min="0" required>
+                            <label for="age-min-${ruleCount}-1">Age Range:</label>
+                            <input type="number" class="form-control age-min" id="age-min-${ruleCount}-1" name="age_min[${ruleCount}][]" placeholder="From Age" min="0" required>
                         </div>
                         <div class="form-group flex-item">
-                            <label for="age-max-${ruleId}-${conditionCount}">Age Range:</label>
-                            <input type="number" class="form-control age-max" id="age-max-${ruleId}-${conditionCount}" name="age_max[${ruleId}][]" placeholder="To Age" min="0" required>
+                            <label for="age-max-${ruleCount}-1">Age Range:</label>
+                            <input type="number" class="form-control age-max" id="age-max-${ruleCount}-1" name="age_max[${ruleCount}][]" placeholder="To Age" min="0" required>
                         </div>
                         <div class="form-group flex-item">
-                            <label for="gender-${ruleId}-${conditionCount}">Gender:</label>
-                            <select class="form-control gender" id="gender-${ruleId}-${conditionCount}" name="genders[${ruleId}][]" required>
+                            <label for="gender-${ruleCount}-1">Gender:</label>
+                            <select class="form-control gender" id="gender-${ruleCount}-1" name="genders[${ruleCount}][]" required>
                                 <option value="all">ALL</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -388,14 +353,122 @@ function initializeConditionFields() {
                         </div>
                     </div>
                     <div class="center-buttons">
-                        <button type="button" class="btn btn-danger remove-condition" style="display: block;">Remove Condition</button>
+                        <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
                     </div>
                 </div>
-            `;
-            $(`#conditions-${ruleId}`).append(conditionHtml);
-            updateRemoveButtons();
-            initializeConditionFields();
-        });
+            </div>
+            <div class="center-buttons">
+                <button type="button" class="btn btn-primary add-condition" data-rule="${ruleCount}">Add Condition</button>
+                <button type="button" class="btn btn-danger remove-rule" style="display: block;">Remove Rule</button>
+            </div>
+        </div>
+    `;
+    $('#rules').append(ruleHtml);
+    updateRemoveButtons();
+    initializeConditionFields();
+});
+
+
+// Add new condition
+$(document).on('click', '.add-condition', function () {
+    const ruleId = $(this).data('rule');
+    conditionCount++;
+    const conditionHtml = `
+        <div class="condition-group" id="condition-${ruleId}-${conditionCount}">
+            <h6>Condition ${conditionCount}</h6>
+            <div class="flex-container">
+                <div class="form-group flex-item">
+                    <label for="condition-type-${ruleId}-${conditionCount}">Condition Type:</label>
+                    <select class="form-control condition-type" id="condition-type-${ruleId}-${conditionCount}" name="conditions[${ruleId}][]">
+                        <option value="range">Range Condition</option>
+                        <option value="comparison">Comparison Condition</option>
+                        <option value="time-dependent">Time-Dependent Condition</option>
+                    </select>
+                </div>
+                <div class="form-group flex-item">
+                    <label for="parameter-${ruleId}-${conditionCount}">Parameter:</label>
+                    <select class="form-control parameter" id="parameter-${ruleId}-${conditionCount}" name="parameters[${ruleId}][]">
+                        <option value="Hemoglobin">Hemoglobin</option>
+                        <option value="Glucose">Glucose</option>
+                        <option value="Potassium">Potassium</option>
+                        <option value="gl">GL</option>
+                        <option value="Sodium">Sodium</option>
+                    </select>
+                </div>
+                <div class="form-group flex-item range-condition" style="display: none;">
+                    <label for="min-value-${ruleId}-${conditionCount}">Minimum Value:</label>
+                    <input type="number" class="form-control min-value" id="min-value-${ruleId}-${conditionCount}" name="min_values[${ruleId}][]" placeholder="Enter minimum value">
+                </div>
+                <div class="form-group flex-item range-condition" style="display: none;">
+                    <label for="max-value-${ruleId}-${conditionCount}">Maximum Value:</label>
+                    <input type="number" class="form-control max-value" id="max-value-${ruleId}-${conditionCount}" name="max_values[${ruleId}][]" placeholder="Enter maximum value">
+                </div>
+                <div class="form-group flex-item comparison-condition" style="display: none;">
+                    <label for="operator-comparison-${ruleId}-${conditionCount}">Operator:</label>
+                    <select class="form-control operator" id="operator-comparison-${ruleId}-${conditionCount}" name="operators[${ruleId}][]">
+                        <option value="greater">></option>
+                        <option value="less"><</option>
+                        <option value="equal">=</option>
+                    </select>
+                </div>
+                <div class="form-group flex-item comparison-condition" style="display: none;">
+                    <label for="value-comparison-${ruleId}-${conditionCount}">Value:</label>
+                    <input type="number" class="form-control comparison-value" id="value-comparison-${ruleId}-${conditionCount}" name="comparison_time_values[${ruleId}][]" placeholder="Enter value">
+                </div>
+                <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                    <label for="time-${ruleId}-${conditionCount}">Time:</label>
+                    <input type="number" class="form-control time-value" id="time-${ruleId}-${conditionCount}" name="time_values[${ruleId}][]" placeholder="Enter time">
+                </div>
+                <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                    <label for="operator-time-${ruleId}-${conditionCount}">Operator:</label>
+                    <select class="form-control operator" id="operator-time-${ruleId}-${conditionCount}" name="operators_time[${ruleId}][]">
+                        <option value="greater">></option>
+                        <option value="less"><</option>
+                        <option value="equal">=</option>
+                        <option value="greater or equal">>=</option>
+                        <option value="less or equal"><=</option>
+                    </select>
+                </div>
+                <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                    <label for="value-time-${ruleId}-${conditionCount}">Value:</label>
+                    <input type="number" class="form-control comparison-value" id="value-time-${ruleId}-${conditionCount}" name="comparison_time_values[${ruleId}][]" placeholder="Enter value">
+                </div>
+                <div class="form-group flex-item">
+                    <label for="unit-${ruleId}-${conditionCount}">Unit:</label>
+                    <select class="form-control unit" id="unit-${ruleId}-${conditionCount}" name="units[${ruleId}][]">
+                        <option value="mg/dL">mg/dL</option>
+                        <option value="g/dL">g/dL</option>
+                        <option value="mmHg">mmHg</option>
+                        <option value="%">%</option>
+                        <option value="bpm">bpm</option>
+                    </select>
+                </div>
+                <div class="form-group flex-item">
+                    <label for="age-min-${ruleId}-${conditionCount}">Age Range:</label>
+                    <input type="number" class="form-control age-min" id="age-min-${ruleId}-${conditionCount}" name="age_min[${ruleId}][]" placeholder="From Age" min="0" required>
+                </div>
+                <div class="form-group flex-item">
+                    <label for="age-max-${ruleId}-${conditionCount}">Age Range:</label>
+                    <input type="number" class="form-control age-max" id="age-max-${ruleId}-${conditionCount}" name="age_max[${ruleId}][]" placeholder="To Age" min="0" required>
+                </div>
+                <div class="form-group flex-item">
+                    <label for="gender-${ruleId}-${conditionCount}">Gender:</label>
+                    <select class="form-control gender" id="gender-${ruleId}-${conditionCount}" name="genders[${ruleId}][]" required>
+                        <option value="all">ALL</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+            </div>
+            <div class="center-buttons">
+                <button type="button" class="btn btn-danger remove-condition" style="display: block;">Remove Condition</button>
+            </div>
+        </div>
+    `;
+    $(`#conditions-${ruleId}`).append(conditionHtml);
+    updateRemoveButtons();
+    initializeConditionFields();
+});
 
         // Remove condition
         $(document).on('click', '.remove-condition', function () {
