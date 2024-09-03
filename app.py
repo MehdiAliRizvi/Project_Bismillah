@@ -55,12 +55,10 @@ def rulebase():
             # Prepare the list to store diseases and their rules
             rules_data = []
 
-
             # Log the received data
             app.logger.info(f'Received disease names: {disease_names}')
             app.logger.info(f'Received disease codes: {disease_codes}')
             app.logger.info(f'Received conditions: {conditions}')
-
 
             # Iterate over diseases to create the nested structure
             for i in range(len(disease_names)):
@@ -111,6 +109,15 @@ def rulebase():
                                 'operator': operator,
                                 'comparison_value': float(comparison_value) if comparison_value else None
                             })
+                        elif condition_type == 'time-dependent':
+                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
+                            comparison_value = conditions[f'comparison_values[{rule_index}][]'][condition_index]
+                            time = conditions[f'time_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'operator': operator,
+                                'comparison_value': float(comparison_value) if comparison_value else None,
+                                'time': time
+                            })
 
                         # Remove None values
                         condition_entry = {k: v for k, v in condition_entry.items() if v not in [None, '']}
@@ -125,10 +132,8 @@ def rulebase():
                 # Append the disease entry to rules data
                 rules_data.append(disease_entry)
 
-
             # Log the rules data before saving
             app.logger.info(f'Rules data to be saved: {rules_data}')
-
 
             # Insert rules data into MongoDB
             for rule in rules_data:
