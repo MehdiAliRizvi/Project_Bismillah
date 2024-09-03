@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Mind - New & Improved</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Disease Predictor</a></li>
+            <li><a href="#">EHR Code</a></li>
+            <li><a href="#">Add A New Rule</a></li>
+            <li><a href="#">Add A New Parameter</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+        <button type="button">Logout</button>
+    </div>
+    <header>
+        <h1>Medical Mind -</h1>
+        <h2>New & Improved</h2>
+        <div class="buttons">
+            <button type="button">Let's Diagnose!</button>
+            <button type="button">Learn More</button>
+        </div>
+    </header>
+    <main>
+        <div class="content">
+            <img src="{{ url_for('static', filename='image.png') }}" alt="Medical Image" class="center-image">
+        </div>
+    </main>
+</body>
+</html>

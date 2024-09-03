@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Values Input</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .form-group select, .form-group input {
+            flex: 2;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .remove-button {
+            margin-left: 10px;
+            color: #e74c3c;
+            cursor: pointer;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .popup.success {
+            background-color: green;
+        }
+        .popup.error {
+            background-color: red;
+        }
+    </style>
+<body>
+    <div class="form-container">
+        <h2>Lab Values Input</h2>
+        <form id="lab-values-form">
+            <div class="form-group">
+                <label for="patient-id">Patient ID</label>
+                <input type="text" name="patient-id" required>
+            </div>
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" min="1" name="age" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select name="gender" required>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div id="lab-values-container">
+                <div class="lab-value-group">
+                    <div class="form-group">
+                        <label for="parameter-name">Parameter Name</label>
+                        <select name="parameter-name" required>
+                            <option value="Hemoglobin">Hemoglobin</option>
+                            <option value="Glucose">Glucose</option>
+                            <option value="Cholesterol">Cholesterol</option>
+                            <option value="Potassium">Potassium</option>
+                            <option value="Sodium">Sodium</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="value">Value</label>
+                        <input type="number" step="0.01" name="value" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unit">Unit</label>
+                        <select name="unit" required>
+                            <option value="g/dL">g/dL</option>
+                            <option value="mg/dL">mg/dL</option>
+                            <option value="mmol/L">mmol/L</option>
+                            <option value="mEq/L">mEq/L</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="valid-until">Lab Value Valid Until</label>
+                        <input type="date" name="valid-until" required>
+                    </div>
+                    <span class="remove-button" onclick="removeLabValue(this)">✖</span>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn" onclick="addLabValue()">Add Another Lab Value</button>
+                <button type="submit" class="btn">Submit</button>
+                <button type="button" class="btn" onclick="evaluateLabValues()">Evaluate</button>
+            </div>
+        </form>
+    </div>
+    <div id="popup" class="popup"></div>
+    <div id="results"></div>
+    <script>
+        document.getElementById('lab-values-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/lab_values', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const popup = document.getElementById('popup');
+                popup.classList.add(data.status);
+                popup.textContent = data.message;
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.classList.remove(data.status);
+                }, 3000);
+                displayResults(data.results);
+            })
+            .catch(error => {
+                const popup = document.getElementById('popup');
+                popup.classList.add('error');
+                popup.textContent = 'An error occurred. Please try again.';
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.classList.remove('error');
+                }, 3000);
+            });
+        });
+
+        function addLabValue() {
+            const container = document.getElementById('lab-values-container');
+            const newGroup = document.createElement('div');
+            newGroup.classList.add('lab-value-group');
+            newGroup.innerHTML = `
+                <div class="form-group">
+                    <label for="parameter-name">Parameter Name</label>
+                    <select name="parameter-name" required>
+                        <option value="Hemoglobin">Hemoglobin</option>
+                        <option value="Glucose">Glucose</option>
+                        <option value="Cholesterol">Cholesterol</option>
+                        <option value="Potassium">Potassium</option>
+                        <option value="Sodium">Sodium</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="value">Value</label>
+                    <input type="number" step="0.01" name="value" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <select name="unit" required>
+                        <option value="g/dL">g/dL</option>
+                        <option value="mg/dL">mg/dL</option>
+                        <option value="mmol/L">mmol/L</option>
+                        <option value="mEq/L">mEq/L</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="valid-until">Lab Value Valid Until</label>
+                    <input type="date" name="valid-until" required>
+                </div>
+                <span class="remove-button" onclick="removeLabValue(this)">✖</span>
+            `;
+            container.appendChild(newGroup);
+        }
+
+        function removeLabValue(button) {
+            const container = document.getElementById('lab-values-container');
+            if (container.children.length > 1) {
+                button.closest('.lab-value-group').remove();
+            }
+        }
+
+        function evaluateLabValues() {
+            const form = document.getElementById('lab-values-form');
+            const formData = new FormData(form);
+            const patientData = {
+                patient_id: formData.get('patient-id'),
+                age: parseInt(formData.get('age')),
+                gender: formData.get('gender'),
+                lab_values: []
+            };
+
+            const labValueGroups = document.querySelectorAll('.lab-value-group');
+            labValueGroups.forEach(group => {
+                const parameterName = group.querySelector('[name="parameter-name"]').value;
+                const value = parseFloat(group.querySelector('[name="value"]').value);
+                const unit = group.querySelector('[name="unit"]').value;
+                const validUntil = group.querySelector('[name="valid-until"]').value;
+
+                patientData.lab_values.push({
+                    parameter_name: parameterName,
+                    value: value,
+                    unit: unit,
+                    valid_until: validUntil
+                });
+            });
+
+            fetch('/lab_values', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(patientData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const popup = document.getElementById('popup');
+                popup.classList.add(data.status);
+                popup.textContent = data.message;
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.classList.remove(data.status);
+                }, 3000);
+                displayResults(data.results);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Results</h2>';
+            if (results.length === 0) {
+                resultsDiv.innerHTML += '<p>No disease match found.</p>';
+            } else {
+                results.forEach(disease => {
+                    resultsDiv.innerHTML += `<p>Disease Code: ${disease.disease_code}</p>`;
+                    resultsDiv.innerHTML += `<p>Disease Name: ${disease.disease_name}</p>`;
+                    resultsDiv.innerHTML += `<p>Matching Rule: ${JSON.stringify(disease.matching_rule)}</p>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
