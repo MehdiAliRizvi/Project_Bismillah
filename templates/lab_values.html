@@ -86,6 +86,7 @@
             background-color: red;
         }
     </style>
+</head>
 <body>
     <div class="form-container">
         <h2>Lab Values Input</h2>
@@ -110,12 +111,8 @@
                 <div class="lab-value-group">
                     <div class="form-group">
                         <label for="parameter-name">Parameter Name</label>
-                        <select name="parameter-name" required>
-                            <option value="Hemoglobin">Hemoglobin</option>
-                            <option value="Glucose">Glucose</option>
-                            <option value="Cholesterol">Cholesterol</option>
-                            <option value="Potassium">Potassium</option>
-                            <option value="Sodium">Sodium</option>
+                        <select name="parameter-name" class="parameter-name" required>
+                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
                     <div class="form-group">
@@ -124,225 +121,222 @@
                     </div>
                     <div class="form-group">
                         <label for="unit">Unit</label>
-                        <select name="unit" required>
-                            <option value="g/dL">g/dL</option>
-                            <option value="mg/dL">mg/dL</option>
-                            <option value="mmol/L">mmol/L</option>
-                            <option value="mEq/L">mEq/L</option>
+                        <select name="unit" class="unit" required>
+                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="valid-until">Lab Value Valid Until</label>
                         <input type="date" name="valid-until" required>
                     </div>
-
                     <div class="form-group">
                         <label for="time-lab-value">Time of Lab Value</label>
                         <input type="date" name="time-lab-value" required>
                     </div>
-
-                    
                     <span class="remove-button" onclick="removeLabValue(this)">✖</span>
                 </div>
             </div>
             <div class="form-actions">
                 <button type="button" class="btn" onclick="addLabValue()">Add Another Lab Value</button>
                 <button type="submit" class="btn">Submit</button>
-                <!-- <button type="button" class="btn" onclick="evaluateLabValues()">Evaluate</button> -->
             </div>
         </form>
     </div>
     <div id="popup" class="popup"></div>
     <div id="results"></div>
-        <script>
-            document.getElementById('lab-values-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                const formData = new FormData(this);
-                fetch('/lab_values', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const popup = document.getElementById('popup');
-                    popup.classList.add(data.status);
-                    popup.textContent = data.message;
-                    popup.style.display = 'block';
-                    setTimeout(() => {
-                        popup.style.display = 'none';
-                        popup.classList.remove(data.status);
-                    }, 3000);
-                    displayResults(data.results);
-                })
-                .catch(error => {
-                    const popup = document.getElementById('popup');
-                    popup.classList.add('error');
-                    popup.textContent = 'An error occurred. Please try again.';
-                    popup.style.display = 'block';
-                    setTimeout(() => {
-                        popup.style.display = 'none';
-                        popup.classList.remove('error');
-                    }, 3000);
+    <script>
+        let mappings = {};
+
+        // Fetch mappings.json
+        fetch('/static/mappings.json')
+            .then(response => response.json())
+            .then(data => {
+                mappings = data;
+                initializeParametersAndUnits();
+            })
+            .catch(error => {
+                console.error('Error loading mappings.json', error);
+            });
+
+        function initializeParametersAndUnits() {
+            const parameterSelects = document.querySelectorAll('.parameter-name');
+            parameterSelects.forEach(parameterSelect => {
+                parameterSelect.innerHTML = '';
+                const sortedKeys = Object.keys(mappings).sort();
+                sortedKeys.forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.text = key;
+                    parameterSelect.appendChild(option);
+                });
+
+                parameterSelect.addEventListener('change', function () {
+                    const unitSelect = this.closest('.lab-value-group').querySelector('.unit');
+                    unitSelect.innerHTML = '';
+                    const parameter = this.value;
+                    if (mappings[parameter] && mappings[parameter].units) {
+                        mappings[parameter].units.forEach(unit => {
+                            if (unit !== null) {
+                                const option = document.createElement('option');
+                                option.value = unit;
+                                option.text = unit;
+                                unitSelect.appendChild(option);
+                            }
+                        });
+                    }
                 });
             });
-    
-            function addLabValue() {
-                const container = document.getElementById('lab-values-container');
-                const newGroup = document.createElement('div');
-                newGroup.classList.add('lab-value-group');
-                newGroup.innerHTML = `
-                    <div class="form-group">
-                        <label for="parameter-name">Parameter Name</label>
-                        <select name="parameter-name" required>
-                            <option value="Hemoglobin">Hemoglobin</option>
-                            <option value="Glucose">Glucose</option>
-                            <option value="Cholesterol">Cholesterol</option>
-                            <option value="Potassium">Potassium</option>
-                            <option value="Sodium">Sodium</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="value">Value</label>
-                        <input type="number" step="0.01" name="value" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="unit">Unit</label>
-                        <select name="unit" required>
-                            <option value="g/dL">g/dL</option>
-                            <option value="mg/dL">mg/dL</option>
-                            <option value="mmol/L">mmol/L</option>
-                            <option value="mEq/L">mEq/L</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="valid-until">Lab Value Valid Until</label>
-                        <input type="date" name="valid-until" required>
-                    </div>
+        }
 
+        function initializeParametersAndUnitsForNewGroup(newGroup) {
+            const parameterSelect = newGroup.querySelector('.parameter-name');
+            parameterSelect.innerHTML = '';
+            const sortedKeys = Object.keys(mappings).sort();
+            sortedKeys.forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.text = key;
+                parameterSelect.appendChild(option);
+            });
 
-                    <div class="form-group">
-                        <label for="time-lab-value">Time of Lab Value</label>
-                        <input type="date" name="time-lab-value" required>
-                    </div>
+            parameterSelect.addEventListener('change', function () {
+                const unitSelect = this.closest('.lab-value-group').querySelector('.unit');
+                unitSelect.innerHTML = '';
+                const parameter = this.value;
+                if (mappings[parameter] && mappings[parameter].units) {
+                    mappings[parameter].units.forEach(unit => {
+                        if (unit !== null) {
+                            const option = document.createElement('option');
+                            option.value = unit;
+                            option.text = unit;
+                            unitSelect.appendChild(option);
+                        }
+                    });
+                }
+            });
+        }
 
-                    
+        document.getElementById('lab-values-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/lab_values', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const popup = document.getElementById('popup');
+                popup.classList.add(data.status);
+                popup.textContent = data.message;
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.classList.remove(data.status);
+                }, 3000);
+                displayResults(data.results);
+            })
+            .catch(error => {
+                const popup = document.getElementById('popup');
+                popup.classList.add('error');
+                popup.textContent = 'An error occurred. Please try again.';
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.classList.remove('error');
+                }, 3000);
+            });
+        });
 
+        function addLabValue() {
+            const container = document.getElementById('lab-values-container');
+            const newGroup = document.createElement('div');
+            newGroup.classList.add('lab-value-group');
+            newGroup.innerHTML = `
+                <div class="form-group">
+                    <label for="parameter-name">Parameter Name</label>
+                    <select name="parameter-name" class="parameter-name" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="value">Value</label>
+                    <input type="number" step="0.01" name="value" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <select name="unit" class="unit" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="valid-until">Lab Value Valid Until</label>
+                    <input type="date" name="valid-until" required>
+                </div>
+                <div class="form-group">
+                    <label for="time-lab-value">Time of Lab Value</label>
+                    <input type="date" name="time-lab-value" required>
+                </div>
+                <span class="remove-button" onclick="removeLabValue(this)">✖</span>
+            `;
+            container.appendChild(newGroup);
+            initializeParametersAndUnitsForNewGroup(newGroup);
+        }
 
-
-                    <span class="remove-button" onclick="removeLabValue(this)">✖</span>
-                `;
-                container.appendChild(newGroup);
+        function removeLabValue(button) {
+            const container = document.getElementById('lab-values-container');
+            if (container.children.length > 1) {
+                button.closest('.lab-value-group').remove();
             }
-    
-            function removeLabValue(button) {
-                const container = document.getElementById('lab-values-container');
-                if (container.children.length > 1) {
-                    button.closest('.lab-value-group').remove();
+        }
+
+        function formatConditions(conditions) {
+            return conditions.map(condition => {
+                const ageRange = `${condition.age_min} to ${condition.age_max} years`;
+                const gender = condition.gender;
+                const parameter = condition.parameter;
+                let valueRange;
+
+                if (condition.type === 'range') {
+                    valueRange = `${condition.min_value} to ${condition.max_value} ${condition.unit}`;
+                } else if (condition.type === 'comparison') {
+                    valueRange = `${condition.operator} ${condition.comparison_value} ${condition.unit}`;
+                } else if (condition.type === 'time-dependent') {
+                    valueRange = `${condition.operator} ${condition.comparison_time_value} ${condition.unit} over ${condition.time} days`;
+                } else {
+                    valueRange = 'N/A';
+                }
+
+                return `Age: ${ageRange}, Gender: ${gender}, Parameter: ${parameter}, Value Range: ${valueRange}`;
+            }).join('; ');
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Results</h2>';
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML += '<p>No disease match found.</p>';
+            } else {
+                // Group diseases by category
+                const groupedResults = results.reduce((acc, disease) => {
+                    if (!acc[disease.category]) {
+                        acc[disease.category] = [];
+                    }
+                    acc[disease.category].push(disease);
+                    return acc;
+                }, {});
+
+                // Display grouped results
+                for (const category in groupedResults) {
+                    resultsDiv.innerHTML += `<h3>Category: ${category}</h3>`;
+                    groupedResults[category].forEach(disease => {
+                        resultsDiv.innerHTML += `<p>Disease Code: ${disease.disease_code}</p>`;
+                        resultsDiv.innerHTML += `<p>Disease Name: ${disease.disease_name}</p>`;
+                        resultsDiv.innerHTML += `<p>Matching Rule: ${formatConditions(disease.matching_rule.conditions)}</p>`;
+                    });
                 }
             }
-    
-            function evaluateLabValues() {
-                const form = document.getElementById('lab-values-form');
-                const formData = new FormData(form);
-                const patientData = {
-                    patient_id: formData.get('patient-id'),
-                    age: parseInt(formData.get('age')),
-                    gender: formData.get('gender'),
-                    lab_values: []
-                };
-    
-                const labValueGroups = document.querySelectorAll('.lab-value-group');
-                labValueGroups.forEach(group => {
-                    const parameterName = group.querySelector('[name="parameter-name"]').value;
-                    const value = parseFloat(group.querySelector('[name="value"]').value);
-                    const unit = group.querySelector('[name="unit"]').value;
-                    const validUntil = group.querySelector('[name="valid-until"]').value;
-    
-                    patientData.lab_values.push({
-                        parameter_name: parameterName,
-                        value: value,
-                        unit: unit,
-                        valid_until: validUntil
-                    });
-                });
-    
-                fetch('/lab_values', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(patientData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const popup = document.getElementById('popup');
-                    popup.classList.add(data.status);
-                    popup.textContent = data.message;
-                    popup.style.display = 'block';
-                    setTimeout(() => {
-                        popup.style.display = 'none';
-                        popup.classList.remove(data.status);
-                    }, 3000);
-                    displayResults(data.results);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
-    
-            function formatConditions(conditions) {
-    return conditions.map(condition => {
-        const ageRange = `${condition.age_min} to ${condition.age_max} years`;
-        const gender = condition.gender;
-        const parameter = condition.parameter;
-        let valueRange;
-
-        if (condition.type === 'range') {
-            valueRange = `${condition.min_value} to ${condition.max_value} ${condition.unit}`;
-        } else if (condition.type === 'comparison') {
-            valueRange = `${condition.operator} ${condition.comparison_value} ${condition.unit}`;
-        } else if (condition.type === 'time-dependent') {
-            valueRange = `${condition.operator} ${condition.comparison_time_value} ${condition.unit} over ${condition.time} days`;
-        } else {
-            valueRange = 'N/A';
         }
-
-        return `Age: ${ageRange}, Gender: ${gender}, Parameter: ${parameter}, Value Range: ${valueRange}`;
-    }).join('; ');
-}
-
-
-
-
-    
-function displayResults(results) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<h2>Results</h2>';
-
-    if (results.length === 0) {
-        resultsDiv.innerHTML += '<p>No disease match found.</p>';
-    } else {
-        // Group diseases by category
-        const groupedResults = results.reduce((acc, disease) => {
-            if (!acc[disease.category]) {
-                acc[disease.category] = [];
-            }
-            acc[disease.category].push(disease);
-            return acc;
-        }, {});
-
-        // Display grouped results
-        for (const category in groupedResults) {
-            resultsDiv.innerHTML += `<h3>Category: ${category}</h3>`;
-            groupedResults[category].forEach(disease => {
-                resultsDiv.innerHTML += `<p>Disease Code: ${disease.disease_code}</p>`;
-                resultsDiv.innerHTML += `<p>Disease Name: ${disease.disease_name}</p>`;
-                resultsDiv.innerHTML += `<p>Matching Rule: ${formatConditions(disease.matching_rule.conditions)}</p>`;
-            });
-        }
-    }
-}
-        </script>
-    </body>
-    </html>
-    
+    </script>
+</body>
+</html>

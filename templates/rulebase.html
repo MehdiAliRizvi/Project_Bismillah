@@ -175,7 +175,7 @@
     <script>
 $(document).ready(function () {
     let ruleCount = 1;
-    let conditionCount = {};
+    let conditionCount = {1: 1}; // Initialize condition count for the first rule
     let diseaseCodeCount = 1;
     let mappings = {};
 
@@ -183,21 +183,52 @@ $(document).ready(function () {
     $.getJSON('/static/mappings.json', function(data) {
         mappings = data;
         initializeParametersAndUnits();
+    }).fail(function() {
+        console.error('Error loading mappings.json');
     });
 
     function initializeParametersAndUnits() {
         $('.parameter').each(function () {
             const parameterSelect = $(this);
             parameterSelect.empty();
-            $.each(mappings, function(key, value) {
+            const sortedKeys = Object.keys(mappings).sort();
+            $.each(sortedKeys, function(index, key) {
                 parameterSelect.append($('<option>', {
                     value: key,
                     text: key
                 }));
             });
+
+            parameterSelect.change(function () {
+                const parameter = $(this).val();
+                const unitSelect = $(this).closest('.condition-group').find('.unit');
+                unitSelect.empty();
+                if (mappings[parameter] && mappings[parameter].units) {
+                    $.each(mappings[parameter].units, function(index, unit) {
+                        if (unit !== null) {
+                            unitSelect.append($('<option>', {
+                                value: unit,
+                                text: unit
+                            }));
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    function initializeParametersAndUnitsForNewCondition(ruleId, conditionId) {
+        const parameterSelect = $(`#parameter-${ruleId}-${conditionId}`);
+        parameterSelect.empty();
+        const sortedKeys = Object.keys(mappings).sort();
+        $.each(sortedKeys, function(index, key) {
+            parameterSelect.append($('<option>', {
+                value: key,
+                text: key
+            }));
         });
 
-        $('.parameter').change(function () {
+        parameterSelect.change(function () {
             const parameter = $(this).val();
             const unitSelect = $(this).closest('.condition-group').find('.unit');
             unitSelect.empty();
@@ -215,50 +246,28 @@ $(document).ready(function () {
     }
 
     function toggleConditionFields(conditionRow, selectedType) {
+        conditionRow.find('.range-condition').hide();
+        conditionRow.find('.comparison-condition').hide();
+        conditionRow.find('.time-dependent-condition').hide();
+
         if (selectedType === 'range') {
             conditionRow.find('.range-condition').show();
-            conditionRow.find('.comparison-condition, .time-dependent-condition').hide();
-            conditionRow.find('.comparison-value, .time-value').removeAttr('required');
         } else if (selectedType === 'comparison') {
             conditionRow.find('.comparison-condition').show();
-            conditionRow.find('.range-condition, .time-dependent-condition').hide();
-            conditionRow.find('.comparison-value').attr('required', 'required');
-            conditionRow.find('.time-value').removeAttr('required');
         } else if (selectedType === 'time-dependent') {
             conditionRow.find('.time-dependent-condition').show();
-            conditionRow.find('.range-condition, .comparison-condition').hide();
-            conditionRow.find('.time-value').attr('required', 'required');
-            conditionRow.find('.comparison-value').attr('required', 'required');
         }
     }
 
     function initializeConditionFields() {
         $('.condition-type').each(function () {
             const conditionGroup = $(this).closest('.condition-group');
-            if ($(this).val() === 'range') {
-                conditionGroup.find('.range-condition').show();
-                conditionGroup.find('.comparison-condition, .time-dependent-condition').hide();
-            } else if ($(this).val() === 'comparison') {
-                conditionGroup.find('.range-condition, .time-dependent-condition').hide();
-                conditionGroup.find('.comparison-condition').show();
-            } else if ($(this).val() === 'time-dependent') {
-                conditionGroup.find('.range-condition, .comparison-condition').hide();
-                conditionGroup.find('.time-dependent-condition').show();
-            }
+            toggleConditionFields(conditionGroup, $(this).val());
         });
 
         $('.condition-type').change(function () {
             const conditionGroup = $(this).closest('.condition-group');
-            if ($(this).val() === 'range') {
-                conditionGroup.find('.range-condition').show();
-                conditionGroup.find('.comparison-condition, .time-dependent-condition').hide();
-            } else if ($(this).val() === 'comparison') {
-                conditionGroup.find('.range-condition, .time-dependent-condition').hide();
-                conditionGroup.find('.comparison-condition').show();
-            } else if ($(this).val() === 'time-dependent') {
-                conditionGroup.find('.range-condition, .comparison-condition').hide();
-                conditionGroup.find('.time-dependent-condition').show();
-            }
+            toggleConditionFields(conditionGroup, $(this).val());
         });
     }
 
@@ -386,7 +395,7 @@ $(document).ready(function () {
         $('#rules').append(ruleHtml);
         updateRemoveButtons();
         initializeConditionFields();
-        initializeParametersAndUnits();
+        initializeParametersAndUnitsForNewCondition(ruleCount, 1);
     });
 
     // Add new condition
@@ -482,7 +491,7 @@ $(document).ready(function () {
         $(`#conditions-${ruleId}`).append(conditionHtml);
         updateRemoveButtons();
         initializeConditionFields();
-        initializeParametersAndUnits();
+        initializeParametersAndUnitsForNewCondition(ruleId, conditionCount[ruleId]); // Attach event listeners to the new condition
     });
 
     // Remove condition
@@ -520,8 +529,22 @@ $(document).ready(function () {
         const ruleId = ruleGroup.attr('id').split('-')[1];
         delete conditionCount[ruleId];
         ruleGroup.remove();
+        updateRuleNumbers();
         updateRemoveButtons();
     });
+
+    function updateRuleNumbers() {
+        $('.rule-group').each(function (index) {
+            const ruleNumber = index + 1;
+            $(this).attr('id', `rule-${ruleNumber}`);
+            $(this).find('h5').text(`Rule ${ruleNumber}`);
+            $(this).find('.conditions').attr('id', `conditions-${ruleNumber}`);
+            $(this).find('.add-condition').attr('data-rule', ruleNumber);
+            $(this).find('.remove-rule').attr('id', `remove-rule-${ruleNumber}`);
+            updateConditionNumbers(ruleNumber);
+        });
+        ruleCount = $('.rule-group').length;
+    }
 
     // Remove disease code
     $(document).on('click', '.remove-disease-code', function () {
