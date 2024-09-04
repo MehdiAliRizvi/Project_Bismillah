@@ -43,7 +43,7 @@ except Exception as e:
 def index():
     return render_template('index.html')
 
-@app.route('/rulebase', methods=['GET', 'POST'])  # This is the rulebase.
+@app.route('/rulebase', methods=['GET', 'POST'])
 def rulebase():
     if request.method == 'POST':
         try:
@@ -51,14 +51,15 @@ def rulebase():
             disease_names = request.form.getlist('disease_names[]')
             disease_codes = request.form.getlist('disease_codes[]')
             conditions = request.form.to_dict(flat=False)
+            print(conditions)
 
             # Prepare the list to store diseases and their rules
             rules_data = []
 
             # Log the received data
-            app.logger.info(f'Received disease names: {disease_names}')
-            app.logger.info(f'Received disease codes: {disease_codes}')
-            app.logger.info(f'Received conditions: {conditions}')
+            # app.logger.info(f'Received disease names: {disease_names}')
+            # app.logger.info(f'Received disease codes: {disease_codes}')
+            # app.logger.info(f'Received conditions: {conditions}')
 
             # Iterate over diseases to create the nested structure
             for i in range(len(disease_names)):
@@ -77,35 +78,13 @@ def rulebase():
                     }
 
                     # Extract all conditions for this rule
-                    condition_keys = [
-                        f'conditions[{rule_index}][]',
-                        f'parameters[{rule_index}][]',
-                        f'units[{rule_index}][]',
-                        f'age_min[{rule_index}][]',
-                        f'age_max[{rule_index}][]',
-                        f'genders[{rule_index}][]',
-                        f'min_values[{rule_index}][]',
-                        f'max_values[{rule_index}][]',
-                        f'operators[{rule_index}][]',
-                        f'comparison_values[{rule_index}][]',
-                        f'time_values[{rule_index}][]',
-                        f'operators_time[{rule_index}][]',
-                        f'comparison_time_values[{rule_index}][]'
-                    ]
-
-                    # Find the maximum length of the condition lists
-                    max_length = max([len(conditions[key]) for key in condition_keys if key in conditions])
-
-                    # Pad all lists to match the maximum length
-                    padded_conditions = {key: (conditions[key] + [None] * (max_length - len(conditions[key])) if key in conditions else [None] * max_length) for key in condition_keys}
-
-                    for condition_index in range(max_length):
-                        condition_type = padded_conditions[f'conditions[{rule_index}][]'][condition_index]
-                        parameter = padded_conditions[f'parameters[{rule_index}][]'][condition_index]
-                        unit = padded_conditions[f'units[{rule_index}][]'][condition_index]
-                        age_min = padded_conditions[f'age_min[{rule_index}][]'][condition_index]
-                        age_max = padded_conditions[f'age_max[{rule_index}][]'][condition_index]
-                        gender = padded_conditions[f'genders[{rule_index}][]'][condition_index]
+                    for condition_index in range(len(conditions[f'conditions[{rule_index}][]'])):
+                        condition_type = conditions[f'conditions[{rule_index}][]'][condition_index]
+                        parameter = conditions[f'parameters[{rule_index}][]'][condition_index]
+                        unit = conditions[f'units[{rule_index}][]'][condition_index]
+                        age_min = conditions[f'age_min[{rule_index}][]'][condition_index]
+                        age_max = conditions[f'age_max[{rule_index}][]'][condition_index]
+                        gender = conditions[f'genders[{rule_index}][]'][condition_index]
 
                         condition_entry = {
                             'type': condition_type,
@@ -118,35 +97,31 @@ def rulebase():
 
                         # Add fields based on condition type
                         if condition_type == 'range':
-                            min_value = padded_conditions[f'min_values[{rule_index}][]'][condition_index]
-                            max_value = padded_conditions[f'max_values[{rule_index}][]'][condition_index]
-                            if min_value:
-                                condition_entry['min_value'] = float(min_value)
-                            if max_value:
-                                condition_entry['max_value'] = float(max_value)
+                            min_value = conditions[f'min_values[{rule_index}][]'][condition_index]
+                            max_value = conditions[f'max_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'min_value': float(min_value) if min_value else None,
+                                'max_value': float(max_value) if max_value else None
+                            })
                         elif condition_type == 'comparison':
-                            operator = padded_conditions[f'operators[{rule_index}][]'][condition_index]
-                            comparison_value = padded_conditions[f'comparison_values[{rule_index}][]'][condition_index]
-                            if operator:
-                                condition_entry['operator'] = operator
-                            if comparison_value:
-                                condition_entry['comparison_value'] = float(comparison_value)
+                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
+                            comparison_value = conditions[f'comparison_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'operator': operator,
+                                'comparison_value': float(comparison_value) if comparison_value else None
+                            })
                         elif condition_type == 'time-dependent':
-                            operator_time = padded_conditions[f'operators_time[{rule_index}][]'][condition_index]
-                            comparison_time_value = padded_conditions[f'comparison_time_values[{rule_index}][]'][condition_index]
-                            time = padded_conditions[f'time_values[{rule_index}][]'][condition_index]
-                            if operator_time:
-                                condition_entry['operator_time'] = operator_time
-                            if comparison_time_value:
-                                condition_entry['comparison_time_value'] = float(comparison_time_value)
-                            if time:
-                                condition_entry['time'] = time
+                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
+                            comparison_time_value = conditions[f'comparison_time_values[{rule_index}][]'][condition_index]
+                            time = conditions[f'time_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'operator': operator,
+                                'comparison_time_value': float(comparison_time_value) if comparison_time_value else None,
+                                'time': time
+                            })
 
                         # Log the condition entry
                         app.logger.info(f'Condition entry: {condition_entry}')
-
-                        # Remove None values
-                        condition_entry = {k: v for k, v in condition_entry.items() if v not in [None, '']}
 
                         # Add condition to rule
                         rule_entry['conditions'].append(condition_entry)
@@ -168,10 +143,10 @@ def rulebase():
             return jsonify({'message': 'Rules successfully added to the database'}), 200
 
         except Exception as e:
+            app.logger.error(f'Error adding data: {str(e)}')
             return jsonify({'message': f'Error adding data: {str(e)}'}), 500
 
     return render_template('rulebase.html')  # Replace with your form template name
-
 
 
 
@@ -305,7 +280,7 @@ def evaluate_time_condition(lab_values, condition):
     relevant_lab_values.sort(key=lambda x: x['time'])
 
     # Debugging: Print relevant lab values
-    # print(f"Relevant lab values for parameter '{condition['parameter']}': {relevant_lab_values}")
+    print(f"Relevant lab values for parameter '{condition['parameter']}': {relevant_lab_values}")
 
     # Check if there are at least two lab values to compare
     if len(relevant_lab_values) < 2:
@@ -318,21 +293,17 @@ def evaluate_time_condition(lab_values, condition):
             time_diff = (datetime.datetime.strptime(relevant_lab_values[j]['time'], '%Y-%m-%d') -
                          datetime.datetime.strptime(relevant_lab_values[i]['time'], '%Y-%m-%d')).days
 
-            # Debugging: Print time difference and values being compared
-            # print(f"Comparing values: {relevant_lab_values[i]['value']} and {relevant_lab_values[j]['value']}")
-            # print(f"Time difference: {time_diff} days")
-
             if time_diff >= int(condition['time']):
                 # # Debugging: Print condition details
-                # print(f"Condition details: {condition}")
+                print(f"Condition details: {condition}")
 
-                if 'comparison_value' in condition:
-                    if compare_values(relevant_lab_values[i]['value'], condition['operator'], condition['comparison_value']) and \
-                       compare_values(relevant_lab_values[j]['value'], condition['operator'], condition['comparison_value']):
+                if 'comparison_time_value' in condition:
+                    if compare_values(relevant_lab_values[i]['value'], condition['operator'], condition['comparison_time_value']) and \
+                       compare_values(relevant_lab_values[j]['value'], condition['operator'], condition['comparison_time_value']):
                         print("Time-dependent condition met.")
                         return True
                 else:
-                    print("comparison_value not found in condition.")
+                    print("comparison_time_value not found in condition.")
                     return False
 
     print("Time-dependent condition not met.")
