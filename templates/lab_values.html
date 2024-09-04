@@ -299,8 +299,10 @@
 
         if (condition.type === 'range') {
             valueRange = `${condition.min_value} to ${condition.max_value} ${condition.unit}`;
-        } else if (condition.type === 'comparison' || condition.type === 'time-dependent') {
+        } else if (condition.type === 'comparison') {
             valueRange = `${condition.operator} ${condition.comparison_value} ${condition.unit}`;
+        } else if (condition.type === 'time-dependent') {
+            valueRange = `${condition.operator} ${condition.comparison_time_value} ${condition.unit} over ${condition.time} days`;
         } else {
             valueRange = 'N/A';
         }
@@ -309,20 +311,37 @@
     }).join('; ');
 }
 
+
+
+
     
-            function displayResults(results) {
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = '<h2>Results</h2>';
-                if (results.length === 0) {
-                    resultsDiv.innerHTML += '<p>No disease match found.</p>';
-                } else {
-                    results.forEach(disease => {
-                        resultsDiv.innerHTML += `<p>Disease Code: ${disease.disease_code}</p>`;
-                        resultsDiv.innerHTML += `<p>Disease Name: ${disease.disease_name}</p>`;
-                        resultsDiv.innerHTML += `<p>Matching Rule: ${formatConditions(disease.matching_rule.conditions)}</p>`;
-                    });
-                }
+function displayResults(results) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<h2>Results</h2>';
+
+    if (results.length === 0) {
+        resultsDiv.innerHTML += '<p>No disease match found.</p>';
+    } else {
+        // Group diseases by category
+        const groupedResults = results.reduce((acc, disease) => {
+            if (!acc[disease.category]) {
+                acc[disease.category] = [];
             }
+            acc[disease.category].push(disease);
+            return acc;
+        }, {});
+
+        // Display grouped results
+        for (const category in groupedResults) {
+            resultsDiv.innerHTML += `<h3>Category: ${category}</h3>`;
+            groupedResults[category].forEach(disease => {
+                resultsDiv.innerHTML += `<p>Disease Code: ${disease.disease_code}</p>`;
+                resultsDiv.innerHTML += `<p>Disease Name: ${disease.disease_name}</p>`;
+                resultsDiv.innerHTML += `<p>Matching Rule: ${formatConditions(disease.matching_rule.conditions)}</p>`;
+            });
+        }
+    }
+}
         </script>
     </body>
     </html>

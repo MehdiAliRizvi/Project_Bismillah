@@ -38,7 +38,7 @@ class RulebaseApp:
 try:
     mongo_db = MongoDB('mongodb://localhost:27017', 'Project1')
     rulebase_app = RulebaseApp(mongo_db)
-    lab_input_user_values_collection = mongo_db.get_collection('LabInputUserValues')
+    lab_input_user_values_collection = mongo_db.get_collection('Lab_Input_User_Values')
 except Exception as e:
     app.logger.error(f"Error connecting to MongoDB: {e}")
     exit(1)  # Exit if there's an issue connecting to the database
@@ -52,9 +52,11 @@ def rulebase():
     if request.method == 'POST':
         try:
             # Extract and parse data from form
+            disease_category = request.form.get('category')  # Get the category as a single value
             disease_names = request.form.getlist('disease_names[]')
             disease_codes = request.form.getlist('disease_codes[]')
             conditions = request.form.to_dict(flat=False)
+            
 
             # Prepare the list to store diseases and their rules
             rules_data = []
@@ -67,6 +69,7 @@ def rulebase():
             # Iterate over diseases to create the nested structure
             for i in range(len(disease_names)):
                 disease_entry = {
+                    'category': disease_category,
                     'disease_name': disease_names[i],
                     'disease_code': disease_codes[i],
                     'rules': []
@@ -209,20 +212,16 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
     try:
         # Fetch all rules from the database
         rules = rulebase_app.get_all_rules()
-        # print(rules)
 
         matching_diseases = []
 
         for rule in rules:
-            disease_name = rule.get('disease_name')
-            disease_code = rule.get('disease_code')
-            if not disease_name or not disease_code:
-                app.logger.error(f"Invalid rule: {rule}")
-                continue
-
-            for rule_entry in rule.get('rules', []):
+            disease_name = rule['disease_name']
+            disease_code = rule['disease_code']
+            category = rule['category']  # Add this line to get the category
+            for rule_entry in rule['rules']:
                 rule_conditions_met = True
-                for condition in rule_entry.get('conditions', []):
+                for condition in rule_entry['conditions']:
                     if not evaluate_condition(condition, patient_age, patient_gender, lab_values):
                         rule_conditions_met = False
                         break
@@ -230,13 +229,14 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
                     matching_diseases.append({
                         'disease_code': disease_code,
                         'disease_name': disease_name,
+                        'category': category,  # Include the category in the result
                         'matching_rule': rule_entry
                     })
                     break  # Since rules are OR-ed, we can stop checking further rules for this disease
 
         return matching_diseases
     except Exception as e:
-        app.logger.error(f"Error occurred while evaluating lab values: {e}")
+        print(f"Error occurred while evaluating lab values: {e}")
         return []
 
 def evaluate_condition(condition, patient_age, patient_gender, lab_values):

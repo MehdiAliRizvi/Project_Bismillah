@@ -29,6 +29,11 @@
         <h2>Rule for Disease ABC</h2>
 
         <form action="{{ url_for('rulebase') }}" method="POST" id="rule-form">
+            <!-- Disease Category Section -->
+            <div class="form-group">
+                <label for="category" style="font-weight: bold;">Category:</label>
+                <input type="text" class="form-control" id="category" name="category" placeholder="Enter Category" required style="width: 500px; height: 70px; font-weight: bold;">
+            </div>
             <!-- Disease Codes Section -->
             <div id="disease-codes">
                 <h4>Disease Codes</h4>
