@@ -5,6 +5,10 @@ import logging
 
 app = Flask(__name__)
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+app.logger.setLevel(logging.INFO)
+
 class MongoDB:
     def __init__(self, uri, db_name):
         self.client = MongoClient(uri)
@@ -18,7 +22,7 @@ class RulebaseApp:
         self.collection = db.get_collection('Rulebase')
 
     def save_rule(self, rule_data):
-        logging.info(f'Saving rule data: {rule_data}')  # Log the data being saved
+        app.logger.info(f'Saving rule data: {rule_data}')  # Log the data being saved
         self.collection.insert_one(rule_data)
 
     def get_all_rules(self):
@@ -33,10 +37,10 @@ class RulebaseApp:
 # Initialize MongoDB client and access the Project1 database
 try:
     mongo_db = MongoDB('mongodb://localhost:27017', 'Project1')
-    lab_input_user_values_collection = mongo_db.get_collection('Lab_Input_User_Values')
     rulebase_app = RulebaseApp(mongo_db)
+    lab_input_user_values_collection = mongo_db.get_collection('LabInputUserValues')
 except Exception as e:
-    print(f"Error connecting to MongoDB: {e}")
+    app.logger.error(f"Error connecting to MongoDB: {e}")
     exit(1)  # Exit if there's an issue connecting to the database
 
 @app.route('/')
@@ -51,15 +55,14 @@ def rulebase():
             disease_names = request.form.getlist('disease_names[]')
             disease_codes = request.form.getlist('disease_codes[]')
             conditions = request.form.to_dict(flat=False)
-            print(conditions)
 
             # Prepare the list to store diseases and their rules
             rules_data = []
 
             # Log the received data
-            # app.logger.info(f'Received disease names: {disease_names}')
-            # app.logger.info(f'Received disease codes: {disease_codes}')
-            # app.logger.info(f'Received conditions: {conditions}')
+            app.logger.info(f'Received disease names: {disease_names}')
+            app.logger.info(f'Received disease codes: {disease_codes}')
+            app.logger.info(f'Received conditions: {conditions}')
 
             # Iterate over diseases to create the nested structure
             for i in range(len(disease_names)):
@@ -148,8 +151,6 @@ def rulebase():
 
     return render_template('rulebase.html')  # Replace with your form template name
 
-
-
 @app.route('/lab_values', methods=['GET', 'POST'])
 def lab_values():
     if request.method == 'POST':
@@ -195,17 +196,15 @@ def lab_values():
             matching_diseases = evaluate_lab_values(age, gender, lab_values_data)
 
             if matching_diseases:
-
                 return jsonify({'status': 'success', 'message': 'Lab values saved and evaluated successfully!', 'results': matching_diseases})
             else:
                 return jsonify({'status': 'success', 'message': 'Lab values saved successfully! No disease match found.', 'results': []})
         except Exception as e:
             # Log error for debugging
-            print(f"Error occurred while saving lab values: {e}")
+            app.logger.error(f"Error occurred while saving lab values: {e}")
             return jsonify({'status': 'error', 'message': str(e)})
     return render_template('lab_values.html')
 
- 
 def evaluate_lab_values(patient_age, patient_gender, lab_values):
     try:
         # Fetch all rules from the database
@@ -215,11 +214,15 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
         matching_diseases = []
 
         for rule in rules:
-            disease_name = rule['disease_name']
-            disease_code = rule['disease_code']
-            for rule_entry in rule['rules']:
+            disease_name = rule.get('disease_name')
+            disease_code = rule.get('disease_code')
+            if not disease_name or not disease_code:
+                app.logger.error(f"Invalid rule: {rule}")
+                continue
+
+            for rule_entry in rule.get('rules', []):
                 rule_conditions_met = True
-                for condition in rule_entry['conditions']:
+                for condition in rule_entry.get('conditions', []):
                     if not evaluate_condition(condition, patient_age, patient_gender, lab_values):
                         rule_conditions_met = False
                         break
@@ -233,86 +236,95 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
 
         return matching_diseases
     except Exception as e:
-        print(f"Error occurred while evaluating lab values: {e}")
+        app.logger.error(f"Error occurred while evaluating lab values: {e}")
         return []
 
 def evaluate_condition(condition, patient_age, patient_gender, lab_values):
-    if not (condition['age_min'] <= patient_age <= condition['age_max']):
-        return False
-    if condition['gender'] != 'all' and condition['gender'] != patient_gender:
-        return False
+    try:
+        if not (condition.get('age_min') <= patient_age <= condition.get('age_max')):
+            return False
+        if condition.get('gender') != 'all' and condition.get('gender') != patient_gender:
+            return False
 
-    for lab_value in lab_values:
-        if lab_value['parameter_name'].lower() == condition['parameter'].lower() and lab_value['valid_until'] >= str(datetime.date.today()):
-            if condition['type'] == 'range':
-                if not (condition['min_value'] <= lab_value['value'] <= condition['max_value']):
-                    return False
-            elif condition['type'] == 'comparison':
-                if not compare_values(lab_value['value'], condition['operator'], condition['comparison_value']):
-                    return False
-            elif condition['type'] == 'time-dependent':
-                if not evaluate_time_condition(lab_values, condition):
-                    return False
-            return True
-    return False
+        for lab_value in lab_values:
+            if lab_value['parameter_name'].lower() == condition.get('parameter', '').lower() and lab_value['valid_until'] >= str(datetime.date.today()):
+                if condition.get('type') == 'range':
+                    if not (condition.get('min_value') <= lab_value['value'] <= condition.get('max_value')):
+                        return False
+                elif condition.get('type') == 'comparison':
+                    if not compare_values(lab_value['value'], condition.get('operator'), condition.get('comparison_value')):
+                        return False
+                elif condition.get('type') == 'time-dependent':
+                    if not evaluate_time_condition(lab_values, condition):
+                        return False
+                return True
+        return False
+    except Exception as e:
+        app.logger.error(f"Error evaluating condition: {e}")
+        return False
 
 def compare_values(value, operator, comparison_value):
-    if operator == 'greater':
-        return value > comparison_value
-    elif operator == 'less':
-        return value < comparison_value
-    elif operator == 'equal':
-        return value == comparison_value
-    elif operator == 'greater or equal':
-        return value >= comparison_value
-    elif operator == 'less or equal':
-        return value <= comparison_value
-    return False
-
-def evaluate_time_condition(lab_values, condition):
-    # Extract relevant lab values for the condition's parameter
-    relevant_lab_values = [
-        lv for lv in lab_values
-        if lv['parameter_name'].lower() == condition['parameter'].lower()
-    ]
-
-    # Sort lab values by time
-    relevant_lab_values.sort(key=lambda x: x['time'])
-
-    # Debugging: Print relevant lab values
-    print(f"Relevant lab values for parameter '{condition['parameter']}': {relevant_lab_values}")
-
-    # Check if there are at least two lab values to compare
-    if len(relevant_lab_values) < 2:
-        print("Not enough lab values to evaluate time-dependent condition.")
+    try:
+        if operator == 'greater':
+            return value > comparison_value
+        elif operator == 'less':
+            return value < comparison_value
+        elif operator == 'equal':
+            return value == comparison_value
+        elif operator == 'greater or equal':
+            return value >= comparison_value
+        elif operator == 'less or equal':
+            return value <= comparison_value
+        return False
+    except Exception as e:
+        app.logger.error(f"Error comparing values: {e}")
         return False
 
-    # Iterate over the lab values to find pairs that meet the condition
-    for i in range(len(relevant_lab_values) - 1):
-        for j in range(i + 1, len(relevant_lab_values)):
-            time_diff = (datetime.datetime.strptime(relevant_lab_values[j]['time'], '%Y-%m-%d') -
-                         datetime.datetime.strptime(relevant_lab_values[i]['time'], '%Y-%m-%d')).days
+def evaluate_time_condition(lab_values, condition):
+    try:
+        # Extract relevant lab values for the condition's parameter
+        relevant_lab_values = [
+            lv for lv in lab_values
+            if lv['parameter_name'].lower() == condition.get('parameter', '').lower()
+        ]
 
-            if time_diff >= int(condition['time']):
-                # # Debugging: Print condition details
-                print(f"Condition details: {condition}")
+        # Sort lab values by time
+        relevant_lab_values.sort(key=lambda x: datetime.datetime.strptime(x['time'], '%Y-%m-%d'))
 
-                if 'comparison_time_value' in condition:
-                    if compare_values(relevant_lab_values[i]['value'], condition['operator'], condition['comparison_time_value']) and \
-                       compare_values(relevant_lab_values[j]['value'], condition['operator'], condition['comparison_time_value']):
-                        print("Time-dependent condition met.")
-                        return True
-                else:
-                    print("comparison_time_value not found in condition.")
-                    return False
+        # Debugging: Print relevant lab values
+        app.logger.info(f"Relevant lab values for parameter '{condition.get('parameter', '')}': {relevant_lab_values}")
 
-    print("Time-dependent condition not met.")
-    return False
+        # Check if there are at least two lab values to compare
+        if len(relevant_lab_values) < 2:
+            app.logger.info("Not enough lab values to evaluate time-dependent condition.")
+            return False
 
+        # Iterate over the lab values to find pairs that meet the condition
+        for i in range(len(relevant_lab_values) - 1):
+            for j in range(i + 1, len(relevant_lab_values)):
+                time_diff = (datetime.datetime.strptime(relevant_lab_values[j]['time'], '%Y-%m-%d') -
+                             datetime.datetime.strptime(relevant_lab_values[i]['time'], '%Y-%m-%d')).days
 
+                if time_diff >= int(condition.get('time', 0)):
+                    # Debugging: Print condition details
+                    app.logger.info(f"Condition details: {condition}")
 
- 
+                    if 'comparison_time_value' in condition:
+                        if compare_values(relevant_lab_values[i]['value'], condition.get('operator'), condition.get('comparison_time_value')) and \
+                           compare_values(relevant_lab_values[j]['value'], condition.get('operator'), condition.get('comparison_time_value')):
+                            app.logger.info("Time-dependent condition met.")
+                            return True
+                    else:
+                        app.logger.info("comparison_time_value not found in condition.")
+                        return False
+
+        app.logger.info("Time-dependent condition not met.")
+        return False
+    except Exception as e:
+        app.logger.error(f"Error evaluating time condition: {e}")
+        return False
+
 if __name__ == '__main__':
     rules = rulebase_app.get_all_rules()
     # print(rules)
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)  # Disable watchdog to avoid socket error on Windows
