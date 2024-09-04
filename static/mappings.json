@@ -1,0 +1,1414 @@
+{
+    "ige": {
+        "names": [
+            "Quantitative immunoglobulin E measurement",
+            "Immunoglobulin E measurement"
+        ],
+        "units": [
+            "iu/ml",
+            "ku/l"
+        ]
+    },
+    "CO2": {
+        "names": [
+            "Carbon dioxide measurement",
+            "Serum or plasma carbon dioxide measurement (moles/volume)"
+        ],
+        "units": [
+            "mmol/l",
+            "meq/l",
+            null
+        ]
+    },
+    "blood_pH": {
+        "names": [
+            "pH measurement"
+        ],
+        "units": [
+            null,
+            "NA",
+            "ph units",
+            "N/A",
+            "n/a",
+            "-",
+            "na",
+            "ph",
+            ".",
+            "units"
+        ]
+    },
+    "urine_ph": {
+        "names": [
+            "Urine pH measurement"
+        ],
+        "units": [
+            null,
+            "ph units"
+        ]
+    },
+    "alanine_aminotransferase": {
+        "names": [
+            "Alanine aminotransferase (ALT) measurement"
+        ],
+        "units": [
+            "u/l",
+            "iu/l"
+        ]
+    },
+    "potassium": {
+        "names": [
+            "Serum or plasma potassium measurement (moles/volume)",
+            "Serum potassium measurement",
+            "Potassium measurement",
+            "Potassium SerPl-sCnc",
+            "Potassium measurement at point of care"
+        ],
+        "units": [
+            "mmol/l",
+            "meq/l"
+        ]
+    },
+    "calcium": {
+        "names": [
+            "Serum or plasma calcium measurement (mass/volume)",
+            "Serum calcium measurement",
+            "Calcium SerPl-mCnc",
+            "Calcium measurement corrected for albumin"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "urine_calcium/oxalate": {
+        "names": [
+            "Urine calcium/oxalate molar ratio"
+        ],
+        "units": [
+            "/hpf"
+        ]
+    },
+    "phosphatase": {
+        "names": [
+            "Alkaline phosphatase measurement",
+            "Serum alkaline phosphatase measurement",
+            "Total alkaline phosphatase measurement",
+            "Alkaline Phosphatase (ALP)"
+        ],
+        "units": [
+            "u/l",
+            "iu/l"
+        ]
+    },
+    "phosphorus": {
+        "names": [
+            "Phosphorus measurement"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "chloride": {
+        "names": [
+            "Serum or plasma chloride measurement (moles/volume)",
+            "Serum chloride measurement",
+            "Chloride measurement at point of care"
+        ],
+        "units": [
+            "mmol/l",
+            "meq/l"
+        ]
+    },
+    "albumin": {
+        "names": [
+            "Serum or plasma albumin measurement (mass/volume)",
+            "Serum albumin measurement",
+            "Urine albumin measurement",
+            "Albumin measurement for detection of microalbuminuria",
+            "Urine albumin measurement for detection of microalbuminuria",
+            "Urine albumin measurement"
+        ],
+        "units": [
+            "g/dl"
+        ]
+    },
+    "hepatitisB_antigen": {
+        "names": [
+            "Hepatitis B virus surface antigen assay"
+        ],
+        "units": [
+            null,
+            "index"
+        ]
+    },
+    "FSH": {
+        "names": [
+            "Follicle stimulating hormone (FSH) measurement"
+        ],
+        "units": [
+            "iu/l",
+            null
+        ]
+    },
+    "creatinine": {
+        "names": [
+            "Serum or plasma creatinine measurement (mass/volume)",
+            "Serum creatinine measurement",
+            "Creatinine measurement at point of care"
+        ],
+        "units": [
+            "mg/dl",
+            null
+        ]
+    },
+    "urine_creatinine": {
+        "names": [
+            "Random urine creatinine measurement",
+            "Urine creatinine measurement (mass/volume)"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "BUN": {
+        "names": [
+            "Blood urea nitrogen (BUN) measurement",
+            "Serum or plasma urea nitrogen measurement (mass/volume)"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "BUN/creatinine": {
+        "names": [
+            "Blood urea nitrogen (BUN)/creatinine ratio",
+            "CALC BUN/CREAT"
+        ],
+        "units": [
+            null,
+            "calc",
+            "ratio"
+        ]
+    },
+    "albumin/globulin_ratio": {
+        "names": [
+            "Albumin to globulin ratio"
+        ],
+        "units": [
+            null,
+            "calc",
+            "ratio"
+        ]
+    },
+    "urine_albumin/creatinine": {
+        "names": [
+            "Random urine albumin/creatinine ratio for detection of microalbuminuria",
+            "Random urine albumin/creatinine ratio",
+            "Urine albumin/creatinine ratio for detection of microalbuminuria"
+        ],
+        "units": [
+            "mcg/mg creat",
+            "ug/mg",
+            "mg/g"
+        ]
+    },
+    "soduim": {
+        "names": [
+            "Serum or plasma sodium measurement (moles/volume)",
+            "Serum sodium measurement",
+            "Sodium measurement at point of care",
+            "Sodium SerPl-sCnc"
+        ],
+        "units": [
+            "mmol/l",
+            "meq/l"
+        ]
+    },
+    "magnesium": {
+        "names": [
+            "Serum or plasma magnesium measurement (mass/volume)",
+            "Serum magnesium measurement",
+            "Magnesium SerPl-mCnc"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "globulin": {
+        "names": [
+            "Globulin measurement",
+            "Total globulin measurement"
+        ],
+        "units": [
+            "g/dl"
+        ]
+    },
+    "triglycerides": {
+        "names": [
+            "Triglycerides measurement"
+        ],
+        "units": [
+            "mg/dl",
+            null
+        ]
+    },
+    "eosinophil": {
+        "names": [
+            "Eosinophil count",
+            "Absolute eosinophil count"
+        ],
+        "units": [
+            "x10e3/ul"
+        ]
+    },
+    "eosinophil_percentage": {
+        "names": [
+            "Eosinophil count",
+            "Eosinophil percentage"
+        ],
+        "units": [
+            "%",
+            null
+        ]
+    },
+    "basophil": {
+        "names": [
+            "Basophil count",
+            "Absolute basophil count",
+            "BASOPHIL (absolute)",
+            "BASOPHIL ABSOLUTE (AUTO DIFFERENTIAL)"
+        ],
+        "units": [
+            "x10e3/ul",
+            "10*3/\u00e2\u03bcl"
+        ]
+    },
+    "basophil_percentage": {
+        "names": [
+            "Basophil percentage",
+            "Basophil count",
+            "BASOPHIL % (AUTO DIFFERENTIAL)",
+            "Basophils Automated"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "opiates": {
+        "names": [
+            "Opiates measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "vitamin_b12": {
+        "names": [
+            "Vitamin B12 measurement",
+            "Serum vitamin B12 measurement"
+        ],
+        "units": [
+            "pg/ml",
+            null
+        ]
+    },
+    "vitamin_D": {
+        "names": [
+            "25-hydroxyvitamin D measurement",
+            "Total 25-hydroxyvitamin D measurement by immunoassay",
+            "Total 25-hydroxyvitamin D measurement",
+            "VITAMIN D25-HYDROXY,TOTAL",
+            "25-OH VITAMIN D",
+            "VITAMIN D,25HYDROXY,TOTAL"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "vitamin_D2": {
+        "names": [
+            "25-hydroxyvitamin D2 measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "vitamin_D3": {
+        "names": [
+            "25-hydroxyvitamin D3 measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "HDL_cholesterol": {
+        "names": [
+            "High density lipoprotein (HDL) cholesterol measurement",
+            "HDL-CHOLESTEROL",
+            "Serum or plasma high density lipoprotein (HDL) cholesterol measurement (mass/volume)"
+        ],
+        "units": [
+            "mg/dl",
+            "nmol/l"
+        ]
+    },
+    "HDL_cholesterol_percentage": {
+        "names": [
+            "HDL as % of Cholesterol",
+            "HDL cholesterol percentage"
+        ],
+        "units": [
+            "%",
+            null
+        ]
+    },
+    "LDL_cholesterol": {
+        "names": [
+            "Low density lipoprotein (LDL) cholesterol measurement",
+            "Serum or plasma calculated low density lipoprotein (LDL) cholesterol determination",
+            "Calculated low density lipoprotein (LDL) cholesterol determination",
+            "Calculated low density lipoprotein measurement"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "Non-HDL_cholesterol": {
+        "names": [
+            "Non-high density lipoprotein (non-HDL) cholesterol determination"
+        ],
+        "units": [
+            "mg/dl",
+            null
+        ]
+    },
+    "VLDL_cholesterol": {
+        "names": [
+            "Very low density lipoprotein (VLDL) cholesterol measurement"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "TIBC": {
+        "names": [
+            "Total iron binding capacity measurement"
+        ],
+        "units": [
+            "ug/dl"
+        ]
+    },
+    "UIBC": {
+        "names": [
+            "Unsaturated iron binding capacity measurement"
+        ],
+        "units": [
+            "ug/dl"
+        ]
+    },
+    "ferritin": {
+        "names": [
+            "Ferritin measurement",
+            "Serum ferritin measurement",
+            "Ferritin SerPl-mCnc"
+        ],
+        "units": [
+            "ng/ml"
+        ]
+    },
+    "calcium/oxalate_ratio": {
+        "names": [
+            "Urine calcium/oxalate molar ratio"
+        ],
+        "units": [
+            "/hpf"
+        ]
+    },
+    "protein": {
+        "names": [
+            "Total protein measurement",
+            "Serum or plasma protein measurement (mass/volume)",
+            "Serum total protein measurement",
+            "T. PROTEIN",
+            "Total Protein, S"
+        ],
+        "units": [
+            "g/dl"
+        ]
+    },
+    "C_reactive_protein": {
+        "names": [
+            "C reactive protein measurement",
+            "C-reactive protein measurement by high sensitivity method",
+            "Quantitative C reactive protein measurement"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "urine_protein": {
+        "names": [
+            "Urine protein measurement",
+            "Urine total protein measurement",
+            "Random urine total protein measurement"
+        ],
+        "units": [
+            null,
+            "mg/dl"
+        ]
+    },
+    "urobilinogen": {
+        "names": [
+            "Urine urobilinogen assay, semi-quantitative",
+            "UROBILINOGEN",
+            "Urine urobilinogen measurement",
+            "Urobilinogen",
+            "Urine urobilinogen measurement"
+        ],
+        "units": [
+            "mg/dl",
+            "mg/ dl",
+            "mg / dL"
+        ]
+    },
+    "urine_blood": {
+        "names": [
+            "Urine blood detection"
+        ],
+        "units": [
+            null
+        ]
+    },
+    "hydrocodone_level": {
+        "names": [
+            "Hydrocodone level",
+            "Hydrocodone Quantification",
+            "Hydrocodone Quantification - measured result"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "norhydrocodone": {
+        "names": [
+            "Norhydrocodone measurement",
+            "Norhydrocodone Quantification",
+            "Norhydrocodone Quantification - measured result"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "benzodiazepines": {
+        "names": [
+            "Benzodiazepines level"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "HCV": {
+        "names": [
+            "Hepatitis C virus antibody assay"
+        ],
+        "units": [
+            null,
+            "s/co ratio"
+        ]
+    },
+    "total_cholesterol": {
+        "names": [
+            "Serum or plasma cholesterol measurement (mass/volume)",
+            "Cholesterol/total calculus mass ratio",
+            "SUM Total Cholesterol",
+            "CHOLESTEROL TOTAL",
+            "CHOLESTEROL(TOTAL)"
+        ],
+        "units": [
+            "mg/dl",
+            null
+        ]
+    },
+    "free_thyroxine": {
+        "names": [
+            "Free thyroxine (FT4) measurement",
+            "Direct serum free thyroxine (FT4) measurement"
+        ],
+        "units": [
+            "ng/dl"
+        ]
+    },
+    "FTI": {
+        "names": [
+            "Free thyroxine index (FTI) measurement"
+        ],
+        "units": [
+            null,
+            "ug/dl"
+        ]
+    },
+    "thyroxine": {
+        "names": [
+            "Thyroxine (T4) measurement",
+            "Total thyroxine measurement"
+        ],
+        "units": [
+            "ug/dl"
+        ]
+    },
+    "PSA": {
+        "names": [
+            "Total prostate specific antigen (PSA) measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "MID": {
+        "names": [
+            "MID",
+            "MID #",
+            "Mid Cells absolute number"
+        ],
+        "units": [
+            "x10e3/ul"
+        ]
+    },
+    "MID_percentage": {
+        "names": [
+            "MID %",
+            "Mid%",
+            "Mid Cells %"
+        ],
+        "units": [
+            "x10e3/ul"
+        ]
+    },
+    "ketone": {
+        "names": [
+            "Ketone measurement"
+        ],
+        "units": [
+            null,
+            "mg/dl",
+            "NA",
+            "n/a",
+            "-",
+            "N/A",
+            "na",
+            "mg/ dl"
+        ]
+    },
+    "urine_ketone": {
+        "names": [
+            "Urine ketones measurement",
+            "Urine ketones measurement by dipstick"
+        ],
+        "units": [
+            null,
+            "mg/dl"
+        ]
+    },
+    "uric_acid": {
+        "names": [
+            "Uric acid measurement"
+        ],
+        "units": [
+            "mg/dl"
+        ]
+    },
+    "free_T3": {
+        "names": [
+            "Free triiodothyronine (T3) measurement"
+        ],
+        "units": [
+            "pg/ml",
+            null
+        ]
+    },
+    "total_T3": {
+        "names": [
+            "Total triiodothyronine (T3) measurement"
+        ],
+        "units": [
+            "ng/dl"
+        ]
+    },
+    "aPTT": {
+        "names": [
+            "Activated partial thromboplastin time (aPTT)"
+        ],
+        "units": [
+            "seconds",
+            null
+        ]
+    },
+    "n-desmethyldiazepam": {
+        "names": [
+            "N-desmethyldiazepam measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "MDMA": {
+        "names": [
+            "Methylenedioxymethamphetamine (MDMA) measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null,
+            "N/A"
+        ]
+    },
+    "fast_plasma_glucose": {
+        "names": [
+            "Fasting glucose measurement",
+            "Serum or plasma fasting glucose measurement",
+            "GLUCOSE FASTING/PLASMA",
+            "GLUCOSE (Fasting)",
+            "Fasting Glucose",
+            "Fasting Glucose - Family Planning/Postpartum",
+            "3 Hour Glucose Tolerance- Fasting",
+            "Glucose- Fasting",
+            "Fasting urine glucose measurement",
+            "Gest. Glucose Fasting",
+            "Fasting glucose",
+            "Fasting Glucose (Non Diabetic)",
+            "Fasting Glucose (Diabetic)",
+            "Glucose p fast SerPl-mCnc",
+            "Fasting Blood Glucose",
+            "Gestational glucose fasting",
+            "Fasting Glucose (Male)",
+            "Fasting Glucose (Female)",
+            "FASTING GLUCOSE",
+            "Glucose Fasting (mg/dl)",
+            "Fasting Glucose Tolerance Test"
+        ],
+        "units": [
+            "mg/dl",
+            null
+        ]
+    },
+    "yeast": {
+        "names": [
+            "YEAST"
+        ],
+        "units": [
+            "/hpf"
+        ]
+    },
+    "total_glucose": {
+        "names": [
+            "Glucose measurement",
+            "Glucose monitoring",
+            "Serum glucose measurement"
+        ],
+        "units": [
+            "mg/dl",
+            null,
+            "NA",
+            "n/a",
+            "-",
+            "N/A",
+            "neg",
+            "mg%"
+        ]
+    },
+    "glomelular_filtration_rate": {
+        "names": [
+            "EST GLOMERULAR FILTRATION RATE",
+            "EST. GLOMERULAR FILTRATION RATE",
+            "Est Glomerular Filtration Rate",
+            "Estimated glomerular filtration rate (GFR) determination",
+            "GFR Glomerular Filtration Rate",
+            "GLOMERULAR FILT. RATE",
+            "GLOMERULAR FILTRATE  ESTIMATE",
+            "GLOMERULAR FILTRATION",
+            "GLOMERULAR FILTRATION RAT",
+            "GLOMERULAR FILTRATION RATE",
+            "GLOMERULAR FILTRATION RATE African American",
+            "GLOMERULAR FILTRATION RATE, ESTIMATED",
+            "GLOMERULAR FILTRATION RATE, ESTIMATED FOR AFRICAN AMERICAN",
+            "Glomerular Filtration Rate",
+            "Glomerular filtration rate (GFR) determination",
+            "Glomerular filtration rate (GFR) estimation",
+            "Glomerular filtration rate (GFR) estimation at point of care",
+            "Glomerular filtration rate (GFR) estimation in African American",
+            "Glomerular filtration rate (GFR) estimation in non-African American",
+            "Glomerular filtration rate (GFR) estimation/1.73 sq m using creatinine measurement with CKD-EPI equation",
+            "Glomerular filtration rate (GFR) estimation/1.73 sq m using serum, plasma, or whole blood creatinine measurement with CKD-EPI equation in black patient",
+            "Glomerular filtration rate (GFR) estimation/1.73 sq m using serum, plasma, or whole blood creatinine measurement with CKD-EPI equation in nonblack patient"
+        ],
+        "units": [
+            "ml/min/1.73m2",
+            null
+        ]
+    },
+    "total_rbc": {
+        "names": [
+            "Erythrocyte count",
+            "RBC Red Blood Cell Count",
+            "Red Blood cell count",
+            "RBC Red Blood Count",
+            "rbc",
+            "ERYTHROCYTES(RBC)"
+        ],
+        "units": [
+            "million/ul",
+            "x10e6/ul",
+            "x10e6/?l",
+            "10:6/ul",
+            "10^6",
+            "x10^6/mcl",
+            "10^6ul"
+        ]
+    },
+    "nucleated_rbc": {
+        "names": [
+            "Nucleated red blood cell count",
+            "Absolute nucleated red blood cell count"
+        ],
+        "units": [
+            "/100 wbc",
+            "/100 wbcs",
+            "per 100 wbc"
+        ]
+    },
+    "nucleated_rbc_percentage": {
+        "names": [
+            "Nucleated red blood cell percentage"
+        ],
+        "units": [
+            "/100 wbc",
+            "%",
+            null
+        ]
+    },
+    "norbuprenorphine": {
+        "names": [
+            "Norbuprenorphine measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "erythrocyte_sedimentation_rate": {
+        "names": [
+            "Erythrocyte sedimentation rate (ESR) by Westergren method",
+            "Erythrocyte sedimentation rate (ESR)"
+        ],
+        "units": [
+            "mm/hr",
+            null,
+            "mm/hour"
+        ]
+    },
+    "MCV": {
+        "names": [
+            "Determination of erythrocyte mean corpuscular volume (MCV)"
+        ],
+        "units": [
+            "fl",
+            "cu um",
+            "\u0192L",
+            "\u03bcm^3",
+            "um^3"
+        ]
+    },
+    "methadone": {
+        "names": [
+            "Methadone measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "d9tetrahydrocannabinol": {
+        "names": [
+            "Delta-9-tetrahydrocannabinol measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "urine_erythrocyte": {
+        "names": [
+            "Urine erythrocyte count"
+        ],
+        "units": [
+            "/hpf",
+            null
+        ]
+    },
+    "methamphetamine": {
+        "names": [
+            "Methamphetamine measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "amphetamine": {
+        "names": [
+            "Amphetamines measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "MCH": {
+        "names": [
+            "Mean corpuscular hemoglobin (MCH) determination",
+            "MEAN CORPUSCULAR HEMOGLOBIN"
+        ],
+        "units": [
+            "pg",
+            null,
+            "pg/cell",
+            "pg.",
+            "picogram"
+        ]
+    },
+    "MCH_concentration": {
+        "names": [
+            "Mean corpuscular hemoglobin concentration (MCHC) determination",
+            "MEAN CORPUSCULAR HEMOGLOBIN CONCENTRATION"
+        ],
+        "units": [
+            "g/dl"
+        ]
+    },
+    "total_wbc": {
+        "names": [
+            "White blood cell count",
+            "Blood leukocytes count (number/volume)",
+            "White Cell Count",
+            "WBC White Blood Count"
+        ],
+        "units": [
+            "x10e3/ul",
+            "10^3",
+            "10(3)",
+            "k/?l",
+            "X 10^9/L",
+            "x10?/ul",
+            null,
+            "NA"
+        ]
+    },
+    "urine_leukocyte": {
+        "names": [
+            "Urine leukocyte count"
+        ],
+        "units": [
+            "/hpf"
+        ]
+    },
+    "leukocyte_esterase": {
+        "names": [
+            "Urine leukocyte esterase measurement"
+        ],
+        "units": [
+            null,
+            "leu/dl"
+        ]
+    },
+    "bilirubin": {
+        "names": [
+            "Direct bilirubin measurement",
+            "Bilirubin measurement",
+            "Unconjugated bilirubin measurement"
+        ],
+        "units": [
+            "mg/dl",
+            null,
+            "na",
+            "NA",
+            "n/a",
+            "N/A",
+            "-",
+            "mg/ dl"
+        ]
+    },
+    "urine_bilirubin": {
+        "names": [
+            "Urine bilirubin measurement"
+        ],
+        "units": [
+            null,
+            "mg/dl"
+        ]
+    },
+    "folic_acid": {
+        "names": [
+            "Serum folic acid measurement",
+            "Folic acid measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "INR": {
+        "names": [
+            "International normalized ratio (INR) calculation"
+        ],
+        "units": [
+            null,
+            "ratio"
+        ]
+    },
+    "lymphocyte_abs": {
+        "names": [
+            "Lymphocyte count",
+            "Absolute lymphocyte count",
+            "LYMPHOCYTE (absolute)",
+            "LYMPHOCYTES ABSOLUTE (AUTO DIFFERENTIAL)"
+        ],
+        "units": [
+            "x10e3/ul",
+            "10^3",
+            "10*3/\u00e2\u03bcl",
+            "x10e3/?l"
+        ]
+    },
+    "lymphocyte_percentage": {
+        "names": [
+            "Lymphocyte count",
+            "Lymphocyte percentage",
+            "Reactive lymphocyte count",
+            "LYMPHOCYTE % (AUTO DIFFERENTIAL)",
+            "Automated lymphocyte count"
+        ],
+        "units": [
+            "%",
+            "%.0"
+        ]
+    },
+    "monocyte": {
+        "names": [
+            "Absolute monocyte count",
+            "Absolute Monocyte Count",
+            "Blood monocyte count",
+            "Monocyte Count",
+            "Monocyte count",
+            "MONOCYTE (absolute)",
+            "MONOCYTES ABSOLUTE (AUTO DIFFERENTIAL)",
+            "ABS MONOCYTES"
+        ],
+        "units": [
+            "x10e3/ul"
+        ]
+    },
+    "monocyte_percentage": {
+        "names": [
+            "Automated monocyte count",
+            "Monocyte count",
+            "Monocyte percentage",
+            "MONOCYTE % (AUTO DIFFERENTIAL)",
+            "Automated monocyte count",
+            "Monocytes Automated",
+            "MONOCYTES  %"
+        ],
+        "units": [
+            "%",
+            null
+        ]
+    },
+    "neutrolphil": {
+        "names": [
+            "Absolute neutrophil count",
+            "Neutrophil band count",
+            "Absolute band neutrophil count",
+            "Neutrophil Count"
+        ],
+        "units": [
+            "cells/ul"
+        ]
+    },
+    "neutrophil_percentage": {
+        "names": [
+            "Neutrophil count",
+            "Neutrophil percentage",
+            "Segmented neutrophil count",
+            "Blood segmented neutrophil count"
+        ],
+        "units": [
+            "%",
+            null
+        ]
+    },
+    "occult_blood_test": {
+        "names": [
+            "Occult blood test"
+        ],
+        "units": [
+            null
+        ]
+    },
+    "myelocyte_abs": {
+        "names": [
+            "Absolute myelocyte count"
+        ],
+        "units": [
+            "cells/ul"
+        ]
+    },
+    "myelocyte_percentage": {
+        "names": [
+            "Myelocyte count"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "metamyelocyte_abs": {
+        "names": [
+            "Absolute metamyelocyte count"
+        ],
+        "units": [
+            "cells/ul"
+        ]
+    },
+    "metamyelocyte_percentage": {
+        "names": [
+            "Metamyelocyte count"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "promyelocyte_abs": {
+        "names": [
+            "Absolute promyelocyte count"
+        ],
+        "units": [
+            "cells/ul"
+        ]
+    },
+    "promyelocyte_percentage": {
+        "names": [
+            "Blood promyelocyte count"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "reactive_lymphocytes": {
+        "names": [
+            "Reactive lymphocyte count"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "urine_nitrite": {
+        "names": [
+            "Urine nitrite test",
+            "Nitrite measurement"
+        ],
+        "units": [
+            null,
+            "mg/dl",
+            "NA",
+            "n/a",
+            "N/A",
+            "mg/l",
+            "na",
+            "-"
+        ]
+    },
+    "granulocyte": {
+        "names": [
+            "Granulocyte count"
+        ],
+        "units": [
+            "x10e3/ul"
+        ]
+    },
+    "granulocyte_percentage": {
+        "names": [
+            "Granulocyte percentage",
+            "GRA"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "immature_granulocyte": {
+        "names": [
+            "Immature granulocyte count",
+            "Absolute immature granulocyte count"
+        ],
+        "units": [
+            "%",
+            "x10e3/ul"
+        ]
+    },
+    "bacteria": {
+        "names": [
+            "BACTERIA",
+            "Bacteria"
+        ],
+        "units": [
+            "/hpf",
+            null,
+            "NA",
+            "-",
+            "/ hpf",
+            "/HpF"
+        ]
+    },
+    "urine_specific_gravity": {
+        "names": [
+            "SPECIFIC GRAVITY",
+            "Specific Gravity",
+            "Urine specific gravity measurement"
+        ],
+        "units": [
+            null,
+            "sg units",
+            "NA",
+            "n/a",
+            "N/A",
+            "-",
+            "na",
+            ".",
+            "SG"
+        ]
+    },
+    "estradiol": {
+        "names": [
+            "Estradiol measurement"
+        ],
+        "units": [
+            "pg/ml"
+        ]
+    },
+    "ESR": {
+        "names": [
+            "Erythrocyte sedimentation rate (ESR) by Westergren method"
+        ],
+        "units": [
+            "mm/hr"
+        ]
+    },
+    "GGT": {
+        "names": [
+            "Gamma glutamyl transferase (GGT) measurement"
+        ],
+        "units": [
+            "u/l",
+            "iu/l"
+        ]
+    },
+    "PCP": {
+        "names": [
+            "Phencyclidine (PCP) measurement"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "urine_glucose": {
+        "names": [
+            "Urine glucose measurement"
+        ],
+        "units": [
+            null,
+            "mg/dl"
+        ]
+    },
+    "urine_color": {
+        "names": [
+            "COLOR",
+            "Urine color determination"
+        ],
+        "units": [
+            null
+        ]
+    },
+    "RPR": {
+        "names": [
+            "Rapid plasma reagin (RPR) test"
+        ],
+        "units": [
+            null,
+            "titer",
+            "{titer}"
+        ]
+    },
+    "hematocrit": {
+        "names": [
+            "HcT",
+            "  HCT",
+            "HCT 0-6",
+            "HCT 45.4",
+            "Hct Adult",
+            "Hematocrit",
+            "Hct age 0-6",
+            "Hct age 7-19",
+            "HCT Hematocrit",
+            "HEMATOCRIT (HCT)",
+            "Hematocrit (HCT)",
+            "Hct VFr Bld Auto",
+            "Blood hematocrit (volume fraction)",
+            "Venous blood hematocrit (volume fraction)",
+            "Venous blood hematocrit",
+            "Automated blood hematocrit (volume fraction)"
+        ],
+        "units": [
+            null,
+            "%"
+        ]
+    },
+    "platelet": {
+        "names": [
+            "Platelet Count (Thou/uL)",
+            "PLATELET COUNT (AUTO)",
+            "platelet count",
+            "Automated platelet count",
+            "PLT Platelet Count",
+            "Platelet count",
+            "Platelet estimate",
+            "PLATELETS COUNT",
+            "Platelet # Bld Auto",
+            "Blood platelet estimation",
+            "platelet",
+            "PLT"
+        ],
+        "units": [
+            "x10e3/ul",
+            "10*3/\u00e2\u03bcl",
+            "x10e3/mm3",
+            "10/mcL",
+            "10/mcl",
+            null,
+            "10",
+            "10^3"
+        ]
+    },
+    "oxycodone": {
+        "names": [
+            "Oxycodone"
+        ],
+        "units": [
+            "ng/ml",
+            null
+        ]
+    },
+    "hemoglobin": {
+        "names": [
+            "Whole blood hemoglobin measurement (mass/volume)",
+            "Hemoglobin measurement",
+            "Total hemoglobin measurement by CO-oximetry"
+        ],
+        "units": [
+            "g/dl",
+            "gm/DL"
+        ]
+    },
+    "carboxy_hemoglobin": {
+        "names": [
+            "Carboxyhemoglobin measurement by CO-oximeter"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "hemoglobin_A1c": {
+        "names": [
+            "Hemoglobin A1c measurement",
+            "Estimated average blood glucose determination based on hemoglobin A1c",
+            "HB A1c",
+            "HEMOGLOBIN A1c  (HGB AIC)",
+            "Glycohemoglobin (HgB A1C)",
+            "Hemoglobin A1c%",
+            "%A1C",
+            "Hgl A1C"
+        ],
+        "units": [
+            "%",
+            null,
+            "mg/dl"
+        ]
+    },
+    "iron": {
+        "names": [
+            "Iron measurement"
+        ],
+        "units": [
+            "ug/dl",
+            null
+        ]
+    },
+    "total_tsh": {
+        "names": [
+            "Thyroid stimulating hormone (TSH) measurement",
+            "Third generation thyroid stimulating hormone (TSH) measurement",
+            "Ultrasensitive thyroid stimulating hormone (TSH) measurement"
+        ],
+        "units": [
+            "uiu/ml",
+            "mcInU/ml",
+            "\u00e2\u03bcu/ml",
+            "iu/ml"
+        ]
+    },
+    "asparate_aminotransferase": {
+        "names": [
+            "Serum or plasma aspartate aminotransferase measurement (enzymatic activity/volume)",
+            "Aspartate aminotransferase (AST) measurement"
+        ],
+        "units": [
+            "u/l",
+            "iu/l",
+            null
+        ]
+    },
+    "transferrin": {
+        "names": [
+            "Transferrin saturation"
+        ],
+        "units": [
+            "%"
+        ]
+    },
+    "anion_gap": {
+        "names": [
+            "Anion gap determination"
+        ],
+        "units": [
+            "mmol/l",
+            "meq/l",
+            null,
+            "\"\"",
+            "ratio"
+        ]
+    },
+    "LDH": {
+        "names": [
+            "Lactate dehydrogenase (LDH) measurement"
+        ],
+        "units": [
+            "u/l",
+            "iu/l",
+            null
+        ]
+    }
+}
