@@ -23,15 +23,15 @@ class RulebaseApp:
     def __init__(self, db):
         self.collection = db.get_collection('Rulebase')
 
-    def save_rule(self, rule_data):
-        app.logger.info(f'Saving rule data: {rule_data}')
-        self.collection.insert_one(rule_data)
+    def save_rule(self, rule):
+        app.logger.info(f'Saving rule: {rule}')
+        self.collection.insert_one(rule.to_dict())
 
     def get_all_rules(self):
-        return list(self.collection.find())
+        return [Rule.from_dict(rule) for rule in self.collection.find()]
 
-    def update_rule(self, rule_id, rule_data):
-        self.collection.update_one({'_id': rule_id}, {'$set': rule_data})
+    def update_rule(self, rule_id, rule):
+        self.collection.update_one({'_id': rule_id}, {'$set': rule.to_dict()})
 
     def delete_rule(self, rule_id):
         self.collection.delete_one({'_id': rule_id})
@@ -40,6 +40,37 @@ class Condition(ABC):
     @abstractmethod
     def evaluate(self, patient_age, patient_gender, lab_values):
         pass
+
+class Condition(ABC):
+    @abstractmethod
+    def evaluate(self, patient_age, patient_gender, lab_values):
+        pass
+
+    @staticmethod
+    def from_dict(condition_data):
+        condition_type = condition_data.get('type')
+        # Normalize condition type strings
+        if condition_type == 'timedependent':
+            condition_type = 'time-dependent'
+
+        if condition_type == 'range':
+            return RangeCondition(condition_data)
+        elif condition_type == 'comparison':
+            return ComparisonCondition(condition_data)
+        elif condition_type == 'time-dependent':
+            return TimeDependentCondition(condition_data)
+        else:
+            raise ValueError(f"Unknown condition type: {condition_type}")
+
+    def to_dict(self):
+        return {
+            'type': self.__class__.__name__.lower().replace('condition', ''),
+            'parameter': self.parameter,
+            'unit': self.unit,
+            'age_min': self.age_min,
+            'age_max': self.age_max,
+            'gender': self.gender
+        }
 
 class RangeCondition(Condition):
     def __init__(self, condition_data):
@@ -62,6 +93,14 @@ class RangeCondition(Condition):
                 if self.min_value <= lab_value['value'] <= self.max_value:
                     return True
         return False
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            'min_value': self.min_value,
+            'max_value': self.max_value
+        })
+        return data
 
 class ComparisonCondition(Condition):
     def __init__(self, condition_data):
@@ -97,6 +136,14 @@ class ComparisonCondition(Condition):
         elif self.operator == 'less or equal':
             return value <= self.comparison_value
         return False
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            'operator': self.operator,
+            'comparison_value': self.comparison_value
+        })
+        return data
 
 class TimeDependentCondition(Condition):
     def __init__(self, condition_data):
@@ -148,6 +195,62 @@ class TimeDependentCondition(Condition):
         elif self.operator == 'less or equal':
             return value <= self.comparison_time_value
         return False
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            'operator': self.operator,
+            'comparison_time_value': self.comparison_time_value,
+            'time': self.time
+        })
+        return data
+    
+
+
+
+class Rule:
+    def __init__(self, category, disease_name, disease_code, rules):
+        self.category = category
+        self.disease_name = disease_name
+        self.disease_code = disease_code
+        self.rules = rules
+
+    def to_dict(self):
+        return {
+            'category': self.category,
+            'disease_name': self.disease_name,
+            'disease_code': self.disease_code,
+            'rules': [rule.to_dict() for rule in self.rules]
+        }
+
+    @staticmethod
+    def from_dict(rule_data):
+        rules = [RuleEntry.from_dict(rule_entry) for rule_entry in rule_data.get('rules', [])]
+        return Rule(
+            rule_data.get('category'),
+            rule_data.get('disease_name'),
+            rule_data.get('disease_code'),
+            rules
+        )
+
+class RuleEntry:
+    def __init__(self, rule_id, conditions):
+        self.rule_id = rule_id
+        self.conditions = conditions
+
+    def to_dict(self):
+        return {
+            'rule_id': self.rule_id,
+            'conditions': [condition.to_dict() for condition in self.conditions]
+        }
+
+    @staticmethod
+    def from_dict(rule_entry_data):
+        conditions = [Condition.from_dict(condition) for condition in rule_entry_data.get('conditions', [])]
+        return RuleEntry(
+            rule_entry_data.get('rule_id'),
+            conditions
+        )
 
 # Initialize MongoDB client and access the Project1 database
 try:
@@ -236,7 +339,13 @@ def rulebase():
 
                 rules_data.append(disease_entry)
 
-            for rule in rules_data:
+            for rule_data in rules_data:
+                rule = Rule(
+                    rule_data['category'],
+                    rule_data['disease_name'],
+                    rule_data['disease_code'],
+                    [RuleEntry.from_dict(rule_entry) for rule_entry in rule_data['rules']]
+                )
                 rulebase_app.save_rule(rule)
 
             return jsonify({'message': 'Rules successfully added to the database'}), 200
@@ -303,46 +412,31 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
         matching_diseases = []
 
         for rule in rules:
-            disease_name = rule['disease_name']
-            disease_code = rule['disease_code']
-            category = rule['category']
-            for rule_entry in rule['rules']:
+            for rule_entry in rule.rules:
                 rule_conditions_met = True
-                for condition in rule_entry['conditions']:
-                    condition_instance = create_condition_instance(condition)
-                    if not condition_instance.evaluate(patient_age, patient_gender, lab_values):
+                for condition in rule_entry.conditions:
+                    if not condition.evaluate(patient_age, patient_gender, lab_values):
                         rule_conditions_met = False
                         break
                 if rule_conditions_met:
                     matching_diseases.append({
-                        'disease_code': disease_code,
-                        'disease_name': disease_name,
-                        'category': category,
-                        'matching_rule': rule_entry
+                        'disease_code': rule.disease_code,
+                        'disease_name': rule.disease_name,
+                        'category': rule.category,
+                        'matching_rule': rule_entry.to_dict()
                     })
-                    break
+                    break  # Since rules are OR-ed, we can stop checking further rules for this disease
 
         return matching_diseases
     except Exception as e:
         print(f"Error occurred while evaluating lab values: {e}")
         return []
 
-def create_condition_instance(condition_data):
-    condition_type = condition_data.get('type')
-    if condition_type == 'range':
-        return RangeCondition(condition_data)
-    elif condition_type == 'comparison':
-        return ComparisonCondition(condition_data)
-    elif condition_type == 'time-dependent':
-        return TimeDependentCondition(condition_data)
-    else:
-        raise ValueError(f"Unknown condition type: {condition_type}")
-
 @app.route('/view_rulebase', methods=['GET'])
 def view_rulebase():
     try:
         rules = rulebase_app.get_all_rules()
-        return render_template('view_rulebase.html', rules=rules)
+        return render_template('view_rulebase.html', rules=[rule.to_dict() for rule in rules])
     except Exception as e:
         app.logger.error(f'Error fetching rules: {str(e)}')
         return jsonify({'message': f'Error fetching rules: {str(e)}'}), 500
@@ -426,7 +520,7 @@ def edit_rule(rule_id):
 
                 updated_rule['rules'].append(disease_entry)
 
-            rulebase_app.update_rule(ObjectId(rule_id), updated_rule)
+            rulebase_app.update_rule(ObjectId(rule_id), Rule.from_dict(updated_rule))
             return redirect(url_for('view_rulebase'))
         return render_template('edit_rule.html', rule=rule)
     except Exception as e:
@@ -444,4 +538,4 @@ def delete_rule(rule_id):
 
 if __name__ == '__main__':
     rules = rulebase_app.get_all_rules()
-    app.run(debug=True)
+    app.run(debug=True)                       
