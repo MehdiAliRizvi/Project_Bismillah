@@ -1,0 +1,73 @@
+@startuml
+
+class RulebaseApp {
+    + collection: Collection
+    + save_rule(rule: Rule)
+    + get_all_rules() -> list
+    + delete_rule(rule_id: ObjectId)
+}
+
+class Rule {
+    + category: str
+    + disease_name: str
+    + disease_code: str
+    + rules: list[OneRule]
+    + to_dict() -> dict
+    + from_dict(rule_data: dict) -> Rule
+}
+
+class OneRule {
+    + rule_id: int
+    + conditions: list[Condition]
+    + to_dict() -> dict
+    + from_dict(rule_entry_data: dict) -> OneRule
+}
+
+abstract class Condition {
+    + parameter: str
+    + unit: str
+    + age_min: int
+    + age_max: int
+    + gender: str
+    + evaluate(patient_age: int, patient_gender: str, lab_values: list) -> bool
+    + to_dict() -> dict
+    + from_dict(condition_data: dict) -> Condition
+}
+
+class RangeCondition {
+    + min_value: float
+    + max_value: float
+    + evaluate(patient_age: int, patient_gender: str, lab_values: list) -> bool
+    + to_dict() -> dict
+}
+
+class ComparisonCondition {
+    + operator: str
+    + comparison_value: float
+    + evaluate(patient_age: int, patient_gender: str, lab_values: list) -> bool
+    + to_dict() -> dict
+}
+
+class TimeDependentCondition {
+    + operator: str
+    + comparison_time_value: float
+    + time: str
+    + evaluate(patient_age: int, patient_gender: str, lab_values: list) -> bool
+    + to_dict() -> dict
+}
+
+class Database {
+    + client: MongoClient
+    + db: Database
+    + get_collection(collection_name: str) -> Collection
+}
+
+RulebaseApp o-- Database
+RulebaseApp o-- Rule
+Rule *-- OneRule
+OneRule *-- Condition
+Condition <|-- RangeCondition
+Condition <|-- ComparisonCondition
+Condition <|-- TimeDependentCondition
+
+@enduml

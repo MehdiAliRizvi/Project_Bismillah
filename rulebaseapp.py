@@ -1,5 +1,4 @@
 from flask import current_app
-from bson import ObjectId
 from rule import Rule
 
 class RulebaseApp:
@@ -12,9 +11,3 @@ class RulebaseApp:
 
     def get_all_rules(self):
         return [Rule.from_dict(rule) for rule in self.collection.find()]
-
-    # def update_rule(self, rule_id, rule):
-    #     self.collection.update_one({'_id': rule_id}, {'$set': rule.to_dict()})
-
-    # def delete_rule(self, rule_id):
-    #     self.collection.delete_one({'_id': rule_id})

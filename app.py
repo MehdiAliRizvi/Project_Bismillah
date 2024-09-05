@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 import logging
 from bson import ObjectId
-from mongodb import MongoDB
+from Database import Database
 from rulebaseapp import RulebaseApp
-from rule import Rule, RuleEntry
+from rule import Rule, OneRule
 from condition import Condition
 import datetime
 import logging
@@ -19,7 +19,7 @@ app.logger.setLevel(logging.INFO)
 
 # Initialize MongoDB client and access the Project1 database
 try:
-    mongo_db = MongoDB('mongodb://localhost:27017', 'Project1')
+    mongo_db = Database('mongodb://localhost:27017', 'Project1')
     rulebase_app = RulebaseApp(mongo_db)
     lab_input_user_values_collection = mongo_db.get_collection('Lab_Input_User_Values')
 except Exception as e:
@@ -109,7 +109,7 @@ def rulebase():
                     rule_data['category'],
                     rule_data['disease_name'],
                     rule_data['disease_code'],
-                    [RuleEntry.from_dict(rule_entry) for rule_entry in rule_data['rules']]
+                    [OneRule.from_dict(rule_entry) for rule_entry in rule_data['rules']]
                 )
                 rulebase_app.save_rule(rule)
 
