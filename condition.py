@@ -1,5 +1,9 @@
+import logging
 from abc import ABC, abstractmethod
 import datetime
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Condition(ABC):
     @abstractmethod
@@ -116,9 +120,13 @@ class TimeDependentCondition(Condition):
         self.gender = condition_data.get('gender')
 
     def evaluate(self, patient_age, patient_gender, lab_values):
+        logging.debug(f"Evaluating TimeDependentCondition for patient age: {patient_age}, gender: {patient_gender}")
+        
         if not (self.age_min <= patient_age <= self.age_max):
+            logging.debug(f"Patient age {patient_age} is outside the range [{self.age_min}, {self.age_max}]")
             return False
         if self.gender != 'all' and self.gender != patient_gender:
+            logging.debug(f"Patient gender {patient_gender} does not match condition gender {self.gender}")
             return False
 
         relevant_lab_values = [
@@ -126,9 +134,12 @@ class TimeDependentCondition(Condition):
             if lv['parameter_name'].lower() == self.parameter.lower()
         ]
 
+        logging.debug(f"Found {len(relevant_lab_values)} relevant lab values for parameter {self.parameter}")
+
         relevant_lab_values.sort(key=lambda x: datetime.datetime.strptime(x['time'], '%Y-%m-%d'))
 
         if len(relevant_lab_values) < 2:
+            logging.debug("Less than 2 relevant lab values found, cannot evaluate time-dependent condition")
             return False
 
         for i in range(len(relevant_lab_values) - 1):
@@ -136,10 +147,14 @@ class TimeDependentCondition(Condition):
                 time_diff = (datetime.datetime.strptime(relevant_lab_values[j]['time'], '%Y-%m-%d') -
                              datetime.datetime.strptime(relevant_lab_values[i]['time'], '%Y-%m-%d')).days
 
+                logging.debug(f"Comparing lab values at times {relevant_lab_values[i]['time']} and {relevant_lab_values[j]['time']}, time difference: {time_diff} days")
+
                 if time_diff >= int(self.time):
                     if self.compare_values(relevant_lab_values[i]['value']) and \
                        self.compare_values(relevant_lab_values[j]['value']):
+                        logging.debug("Time-dependent condition met")
                         return True
+        logging.debug("Time-dependent condition not met")
         return False
 
     def compare_values(self, value):

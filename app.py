@@ -5,6 +5,10 @@ from mongodb import MongoDB
 from rulebaseapp import RulebaseApp
 from rule import Rule, RuleEntry
 from condition import Condition
+import datetime
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 app = Flask(__name__)
@@ -171,17 +175,21 @@ def lab_values():
 def evaluate_lab_values(patient_age, patient_gender, lab_values):
     try:
         rules = rulebase_app.get_all_rules()
+        logging.debug(f"Fetched {len(rules)} rules for evaluation")
 
         matching_diseases = []
 
         for rule in rules:
+            logging.debug(f"Evaluating rule for disease: {rule.disease_name}")
             for rule_entry in rule.rules:
                 rule_conditions_met = True
                 for condition in rule_entry.conditions:
                     if not condition.evaluate(patient_age, patient_gender, lab_values):
+                        logging.debug(f"Condition not met: {condition}")
                         rule_conditions_met = False
                         break
                 if rule_conditions_met:
+                    logging.debug(f"All conditions met for rule entry: {rule_entry}")
                     matching_diseases.append({
                         'disease_code': rule.disease_code,
                         'disease_name': rule.disease_name,
@@ -190,23 +198,20 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
                     })
                     break  # Since rules are OR-ed, we can stop checking further rules for this disease
 
+        logging.debug(f"Found {len(matching_diseases)} matching diseases")
         return matching_diseases
     except Exception as e:
-        print(f"Error occurred while evaluating lab values: {e}")
+        logging.error(f"Error occurred while evaluating lab values: {e}")
         return []
-
+    
 @app.route('/view_rulebase', methods=['GET'])
 def view_rulebase():
     try:
         rules = rulebase_app.get_all_rules()
-        return render_template('view_rulebase.html', rules=[rule.to_dict() for rule in rules])
+        return render_template('view_rulebase.html', rules=rules)
     except Exception as e:
-        app.logger.error(f'Error fetching rules: {str(e)}')
-        return jsonify({'message': f'Error fetching rules: {str(e)}'}), 500
-
-@app.route('/edit_rule/<rule_id>', methods=['GET', 'POST'])
-def edit_rule(rule_id):
-    render_template('rulebase.html')
+        app.logger.error(f"Error fetching rules: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/delete_rule/<rule_id>', methods=['POST'])
 def delete_rule(rule_id):
@@ -214,9 +219,11 @@ def delete_rule(rule_id):
         rulebase_app.delete_rule(ObjectId(rule_id))
         return redirect(url_for('view_rulebase'))
     except Exception as e:
-        app.logger.error(f'Error deleting rule: {str(e)}')
-        return jsonify({'message': f'Error deleting rule: {str(e)}'}), 500
+        app.logger.error(f"Error deleting rule: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
 
+    
 if __name__ == '__main__':
     rules = rulebase_app.get_all_rules()
     app.run(debug=True)
