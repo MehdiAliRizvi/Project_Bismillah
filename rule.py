@@ -7,11 +7,10 @@ class Rule:
         self.disease_name = disease_name
         self.disease_code = disease_code
         self.rules = rules
-        self._id = _id  # Ensure _id is included in the constructor
+
 
     def to_dict(self):
         return {
-            '_id': self._id,  # Include _id in the dictionary
             'category': self.category,
             'disease_name': self.disease_name,
             'disease_code': self.disease_code,
@@ -25,8 +24,7 @@ class Rule:
             rule_data.get('category'),
             rule_data.get('disease_name'),
             rule_data.get('disease_code'),
-            rules,
-            _id=rule_data.get('_id')  # Ensure _id is correctly set
+            rules
         )
 
 class RuleEntry:
