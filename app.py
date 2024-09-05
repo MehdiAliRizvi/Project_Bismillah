@@ -1,7 +1,9 @@
 from pymongo import MongoClient
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import datetime
 import logging
+from bson import ObjectId
+from abc import ABC, abstractmethod
 
 app = Flask(__name__)
 
@@ -22,7 +24,7 @@ class RulebaseApp:
         self.collection = db.get_collection('Rulebase')
 
     def save_rule(self, rule_data):
-        app.logger.info(f'Saving rule data: {rule_data}')  # Log the data being saved
+        app.logger.info(f'Saving rule data: {rule_data}')
         self.collection.insert_one(rule_data)
 
     def get_all_rules(self):
@@ -34,6 +36,119 @@ class RulebaseApp:
     def delete_rule(self, rule_id):
         self.collection.delete_one({'_id': rule_id})
 
+class Condition(ABC):
+    @abstractmethod
+    def evaluate(self, patient_age, patient_gender, lab_values):
+        pass
+
+class RangeCondition(Condition):
+    def __init__(self, condition_data):
+        self.min_value = condition_data.get('min_value')
+        self.max_value = condition_data.get('max_value')
+        self.parameter = condition_data.get('parameter')
+        self.unit = condition_data.get('unit')
+        self.age_min = condition_data.get('age_min')
+        self.age_max = condition_data.get('age_max')
+        self.gender = condition_data.get('gender')
+
+    def evaluate(self, patient_age, patient_gender, lab_values):
+        if not (self.age_min <= patient_age <= self.age_max):
+            return False
+        if self.gender != 'all' and self.gender != patient_gender:
+            return False
+
+        for lab_value in lab_values:
+            if lab_value['parameter_name'].lower() == self.parameter.lower() and lab_value['valid_until'] >= str(datetime.date.today()):
+                if self.min_value <= lab_value['value'] <= self.max_value:
+                    return True
+        return False
+
+class ComparisonCondition(Condition):
+    def __init__(self, condition_data):
+        self.operator = condition_data.get('operator')
+        self.comparison_value = condition_data.get('comparison_value')
+        self.parameter = condition_data.get('parameter')
+        self.unit = condition_data.get('unit')
+        self.age_min = condition_data.get('age_min')
+        self.age_max = condition_data.get('age_max')
+        self.gender = condition_data.get('gender')
+
+    def evaluate(self, patient_age, patient_gender, lab_values):
+        if not (self.age_min <= patient_age <= self.age_max):
+            return False
+        if self.gender != 'all' and self.gender != patient_gender:
+            return False
+
+        for lab_value in lab_values:
+            if lab_value['parameter_name'].lower() == self.parameter.lower() and lab_value['valid_until'] >= str(datetime.date.today()):
+                if self.compare_values(lab_value['value']):
+                    return True
+        return False
+
+    def compare_values(self, value):
+        if self.operator == 'greater':
+            return value > self.comparison_value
+        elif self.operator == 'less':
+            return value < self.comparison_value
+        elif self.operator == 'equal':
+            return value == self.comparison_value
+        elif self.operator == 'greater or equal':
+            return value >= self.comparison_value
+        elif self.operator == 'less or equal':
+            return value <= self.comparison_value
+        return False
+
+class TimeDependentCondition(Condition):
+    def __init__(self, condition_data):
+        self.operator = condition_data.get('operator')
+        self.comparison_time_value = condition_data.get('comparison_time_value')
+        self.time = condition_data.get('time')
+        self.parameter = condition_data.get('parameter')
+        self.unit = condition_data.get('unit')
+        self.age_min = condition_data.get('age_min')
+        self.age_max = condition_data.get('age_max')
+        self.gender = condition_data.get('gender')
+
+    def evaluate(self, patient_age, patient_gender, lab_values):
+        if not (self.age_min <= patient_age <= self.age_max):
+            return False
+        if self.gender != 'all' and self.gender != patient_gender:
+            return False
+
+        relevant_lab_values = [
+            lv for lv in lab_values
+            if lv['parameter_name'].lower() == self.parameter.lower()
+        ]
+
+        relevant_lab_values.sort(key=lambda x: datetime.datetime.strptime(x['time'], '%Y-%m-%d'))
+
+        if len(relevant_lab_values) < 2:
+            return False
+
+        for i in range(len(relevant_lab_values) - 1):
+            for j in range(i + 1, len(relevant_lab_values)):
+                time_diff = (datetime.datetime.strptime(relevant_lab_values[j]['time'], '%Y-%m-%d') -
+                             datetime.datetime.strptime(relevant_lab_values[i]['time'], '%Y-%m-%d')).days
+
+                if time_diff >= int(self.time):
+                    if self.compare_values(relevant_lab_values[i]['value']) and \
+                       self.compare_values(relevant_lab_values[j]['value']):
+                        return True
+        return False
+
+    def compare_values(self, value):
+        if self.operator == 'greater':
+            return value > self.comparison_time_value
+        elif self.operator == 'less':
+            return value < self.comparison_time_value
+        elif self.operator == 'equal':
+            return value == self.comparison_time_value
+        elif self.operator == 'greater or equal':
+            return value >= self.comparison_time_value
+        elif self.operator == 'less or equal':
+            return value <= self.comparison_time_value
+        return False
+
 # Initialize MongoDB client and access the Project1 database
 try:
     mongo_db = MongoDB('mongodb://localhost:27017', 'Project1')
@@ -41,7 +156,7 @@ try:
     lab_input_user_values_collection = mongo_db.get_collection('Lab_Input_User_Values')
 except Exception as e:
     app.logger.error(f"Error connecting to MongoDB: {e}")
-    exit(1)  # Exit if there's an issue connecting to the database
+    exit(1)
 
 @app.route('/')
 def index():
@@ -51,22 +166,13 @@ def index():
 def rulebase():
     if request.method == 'POST':
         try:
-            # Extract and parse data from form
-            disease_category = request.form.get('category')  # Get the category as a single value
+            disease_category = request.form.get('category')
             disease_names = request.form.getlist('disease_names[]')
             disease_codes = request.form.getlist('disease_codes[]')
             conditions = request.form.to_dict(flat=False)
-            
 
-            # Prepare the list to store diseases and their rules
             rules_data = []
 
-            # Log the received data
-            app.logger.info(f'Received disease names: {disease_names}')
-            app.logger.info(f'Received disease codes: {disease_codes}')
-            app.logger.info(f'Received conditions: {conditions}')
-
-            # Iterate over diseases to create the nested structure
             for i in range(len(disease_names)):
                 disease_entry = {
                     'category': disease_category,
@@ -75,7 +181,6 @@ def rulebase():
                     'rules': []
                 }
 
-                # Find the rules and conditions for this particular disease
                 rule_index = 1
                 while f'conditions[{rule_index}][]' in conditions:
                     rule_entry = {
@@ -83,7 +188,6 @@ def rulebase():
                         'conditions': []
                     }
 
-                    # Extract all conditions for this rule
                     for condition_index in range(len(conditions[f'conditions[{rule_index}][]'])):
                         condition_type = conditions[f'conditions[{rule_index}][]'][condition_index]
                         parameter = conditions[f'parameters[{rule_index}][]'][condition_index]
@@ -101,7 +205,6 @@ def rulebase():
                             'gender': gender
                         }
 
-                        # Add fields based on condition type
                         if condition_type == 'range':
                             min_value = conditions[f'min_values[{rule_index}][]'][condition_index]
                             max_value = conditions[f'max_values[{rule_index}][]'][condition_index]
@@ -126,23 +229,13 @@ def rulebase():
                                 'time': time
                             })
 
-                        # Log the condition entry
-                        app.logger.info(f'Condition entry: {condition_entry}')
-
-                        # Add condition to rule
                         rule_entry['conditions'].append(condition_entry)
 
-                    # Append the rule to the disease entry
                     disease_entry['rules'].append(rule_entry)
                     rule_index += 1
 
-                # Append the disease entry to rules data
                 rules_data.append(disease_entry)
 
-            # Log the rules data before saving
-            app.logger.info(f'Rules data to be saved: {rules_data}')
-
-            # Insert rules data into MongoDB
             for rule in rules_data:
                 rulebase_app.save_rule(rule)
 
@@ -152,7 +245,7 @@ def rulebase():
             app.logger.error(f'Error adding data: {str(e)}')
             return jsonify({'message': f'Error adding data: {str(e)}'}), 500
 
-    return render_template('rulebase.html')  # Replace with your form template name
+    return render_template('rulebase.html')
 
 @app.route('/lab_values', methods=['GET', 'POST'])
 def lab_values():
@@ -165,7 +258,7 @@ def lab_values():
             values = request.form.getlist('value')
             units = request.form.getlist('unit')
             valid_untils = request.form.getlist('valid-until')
-            times = request.form.getlist('time-lab-value')  # New field for time
+            times = request.form.getlist('time-lab-value')
             lab_values_data = []
             for i in range(len(parameters)):
                 lab_value_data = {
@@ -173,20 +266,17 @@ def lab_values():
                     'value': float(values[i]),
                     'unit': units[i],
                     'valid_until': valid_untils[i],
-                    'time': times[i]  # Add the time field
+                    'time': times[i]
                 }
                 lab_values_data.append(lab_value_data)
 
-            # Check if a document with the same patient ID already exists
             existing_patient = lab_input_user_values_collection.find_one({'patient_id': patient_id})
             if existing_patient:
-                # Update the existing document by appending new lab values
                 lab_input_user_values_collection.update_one(
                     {'patient_id': patient_id},
                     {'$push': {'lab_values': {'$each': lab_values_data}}}
                 )
             else:
-                # Create a new document
                 new_patient_data = {
                     'patient_id': patient_id,
                     'age': age,
@@ -195,7 +285,6 @@ def lab_values():
                 }
                 lab_input_user_values_collection.insert_one(new_patient_data)
 
-            # Evaluate the lab values against the rules
             matching_diseases = evaluate_lab_values(age, gender, lab_values_data)
 
             if matching_diseases:
@@ -203,14 +292,12 @@ def lab_values():
             else:
                 return jsonify({'status': 'success', 'message': 'Lab values saved successfully! No disease match found.', 'results': []})
         except Exception as e:
-            # Log error for debugging
             app.logger.error(f"Error occurred while saving lab values: {e}")
             return jsonify({'status': 'error', 'message': str(e)})
     return render_template('lab_values.html')
 
 def evaluate_lab_values(patient_age, patient_gender, lab_values):
     try:
-        # Fetch all rules from the database
         rules = rulebase_app.get_all_rules()
 
         matching_diseases = []
@@ -218,113 +305,143 @@ def evaluate_lab_values(patient_age, patient_gender, lab_values):
         for rule in rules:
             disease_name = rule['disease_name']
             disease_code = rule['disease_code']
-            category = rule['category']  # Add this line to get the category
+            category = rule['category']
             for rule_entry in rule['rules']:
                 rule_conditions_met = True
                 for condition in rule_entry['conditions']:
-                    if not evaluate_condition(condition, patient_age, patient_gender, lab_values):
+                    condition_instance = create_condition_instance(condition)
+                    if not condition_instance.evaluate(patient_age, patient_gender, lab_values):
                         rule_conditions_met = False
                         break
                 if rule_conditions_met:
                     matching_diseases.append({
                         'disease_code': disease_code,
                         'disease_name': disease_name,
-                        'category': category,  # Include the category in the result
+                        'category': category,
                         'matching_rule': rule_entry
                     })
-                    break  # Since rules are OR-ed, we can stop checking further rules for this disease
+                    break
 
         return matching_diseases
     except Exception as e:
         print(f"Error occurred while evaluating lab values: {e}")
         return []
 
-def evaluate_condition(condition, patient_age, patient_gender, lab_values):
+def create_condition_instance(condition_data):
+    condition_type = condition_data.get('type')
+    if condition_type == 'range':
+        return RangeCondition(condition_data)
+    elif condition_type == 'comparison':
+        return ComparisonCondition(condition_data)
+    elif condition_type == 'time-dependent':
+        return TimeDependentCondition(condition_data)
+    else:
+        raise ValueError(f"Unknown condition type: {condition_type}")
+
+@app.route('/view_rulebase', methods=['GET'])
+def view_rulebase():
     try:
-        if not (condition.get('age_min') <= patient_age <= condition.get('age_max')):
-            return False
-        if condition.get('gender') != 'all' and condition.get('gender') != patient_gender:
-            return False
-
-        for lab_value in lab_values:
-            if lab_value['parameter_name'].lower() == condition.get('parameter', '').lower() and lab_value['valid_until'] >= str(datetime.date.today()):
-                if condition.get('type') == 'range':
-                    if not (condition.get('min_value') <= lab_value['value'] <= condition.get('max_value')):
-                        return False
-                elif condition.get('type') == 'comparison':
-                    if not compare_values(lab_value['value'], condition.get('operator'), condition.get('comparison_value')):
-                        return False
-                elif condition.get('type') == 'time-dependent':
-                    if not evaluate_time_condition(lab_values, condition):
-                        return False
-                return True
-        return False
+        rules = rulebase_app.get_all_rules()
+        return render_template('view_rulebase.html', rules=rules)
     except Exception as e:
-        app.logger.error(f"Error evaluating condition: {e}")
-        return False
+        app.logger.error(f'Error fetching rules: {str(e)}')
+        return jsonify({'message': f'Error fetching rules: {str(e)}'}), 500
 
-def compare_values(value, operator, comparison_value):
+@app.route('/edit_rule/<rule_id>', methods=['GET', 'POST'])
+def edit_rule(rule_id):
     try:
-        if operator == 'greater':
-            return value > comparison_value
-        elif operator == 'less':
-            return value < comparison_value
-        elif operator == 'equal':
-            return value == comparison_value
-        elif operator == 'greater or equal':
-            return value >= comparison_value
-        elif operator == 'less or equal':
-            return value <= comparison_value
-        return False
-    except Exception as e:
-        app.logger.error(f"Error comparing values: {e}")
-        return False
+        rule = rulebase_app.collection.find_one({'_id': ObjectId(rule_id)})
+        if request.method == 'POST':
+            updated_rule = {
+                'category': request.form.get('category'),
+                'disease_name': request.form.get('disease_name'),
+                'disease_code': request.form.get('disease_code'),
+                'rules': []
+            }
 
-def evaluate_time_condition(lab_values, condition):
+            disease_names = request.form.getlist('disease_names[]')
+            disease_codes = request.form.getlist('disease_codes[]')
+            conditions = request.form.to_dict(flat=False)
+
+            for i in range(len(disease_names)):
+                disease_entry = {
+                    'category': updated_rule['category'],
+                    'disease_name': disease_names[i],
+                    'disease_code': disease_codes[i],
+                    'rules': []
+                }
+
+                rule_index = 1
+                while f'conditions[{rule_index}][]' in conditions:
+                    rule_entry = {
+                        'rule_id': rule_index,
+                        'conditions': []
+                    }
+
+                    for condition_index in range(len(conditions[f'conditions[{rule_index}][]'])):
+                        condition_type = conditions[f'conditions[{rule_index}][]'][condition_index]
+                        parameter = conditions[f'parameters[{rule_index}][]'][condition_index]
+                        unit = conditions[f'units[{rule_index}][]'][condition_index]
+                        age_min = conditions[f'age_min[{rule_index}][]'][condition_index]
+                        age_max = conditions[f'age_max[{rule_index}][]'][condition_index]
+                        gender = conditions[f'genders[{rule_index}][]'][condition_index]
+
+                        condition_entry = {
+                            'type': condition_type,
+                            'parameter': parameter,
+                            'unit': unit,
+                            'age_min': int(age_min) if age_min else None,
+                            'age_max': int(age_max) if age_max else None,
+                            'gender': gender
+                        }
+
+                        if condition_type == 'range':
+                            min_value = conditions[f'min_values[{rule_index}][]'][condition_index]
+                            max_value = conditions[f'max_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'min_value': float(min_value) if min_value else None,
+                                'max_value': float(max_value) if max_value else None
+                            })
+                        elif condition_type == 'comparison':
+                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
+                            comparison_value = conditions[f'comparison_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'operator': operator,
+                                'comparison_value': float(comparison_value) if comparison_value else None
+                            })
+                        elif condition_type == 'time-dependent':
+                            operator = conditions[f'operators[{rule_index}][]'][condition_index]
+                            comparison_time_value = conditions[f'comparison_time_values[{rule_index}][]'][condition_index]
+                            time = conditions[f'time_values[{rule_index}][]'][condition_index]
+                            condition_entry.update({
+                                'operator': operator,
+                                'comparison_time_value': float(comparison_time_value) if comparison_time_value else None,
+                                'time': time
+                            })
+
+                        rule_entry['conditions'].append(condition_entry)
+
+                    disease_entry['rules'].append(rule_entry)
+                    rule_index += 1
+
+                updated_rule['rules'].append(disease_entry)
+
+            rulebase_app.update_rule(ObjectId(rule_id), updated_rule)
+            return redirect(url_for('view_rulebase'))
+        return render_template('edit_rule.html', rule=rule)
+    except Exception as e:
+        app.logger.error(f'Error editing rule: {str(e)}')
+        return jsonify({'message': f'Error editing rule: {str(e)}'}), 500
+
+@app.route('/delete_rule/<rule_id>', methods=['POST'])
+def delete_rule(rule_id):
     try:
-        # Extract relevant lab values for the condition's parameter
-        relevant_lab_values = [
-            lv for lv in lab_values
-            if lv['parameter_name'].lower() == condition.get('parameter', '').lower()
-        ]
-
-        # Sort lab values by time
-        relevant_lab_values.sort(key=lambda x: datetime.datetime.strptime(x['time'], '%Y-%m-%d'))
-
-        # Debugging: Print relevant lab values
-        app.logger.info(f"Relevant lab values for parameter '{condition.get('parameter', '')}': {relevant_lab_values}")
-
-        # Check if there are at least two lab values to compare
-        if len(relevant_lab_values) < 2:
-            app.logger.info("Not enough lab values to evaluate time-dependent condition.")
-            return False
-
-        # Iterate over the lab values to find pairs that meet the condition
-        for i in range(len(relevant_lab_values) - 1):
-            for j in range(i + 1, len(relevant_lab_values)):
-                time_diff = (datetime.datetime.strptime(relevant_lab_values[j]['time'], '%Y-%m-%d') -
-                             datetime.datetime.strptime(relevant_lab_values[i]['time'], '%Y-%m-%d')).days
-
-                if time_diff >= int(condition.get('time', 0)):
-                    # Debugging: Print condition details
-                    app.logger.info(f"Condition details: {condition}")
-
-                    if 'comparison_time_value' in condition:
-                        if compare_values(relevant_lab_values[i]['value'], condition.get('operator'), condition.get('comparison_time_value')) and \
-                           compare_values(relevant_lab_values[j]['value'], condition.get('operator'), condition.get('comparison_time_value')):
-                            app.logger.info("Time-dependent condition met.")
-                            return True
-                    else:
-                        app.logger.info("comparison_time_value not found in condition.")
-                        return False
-
-        app.logger.info("Time-dependent condition not met.")
-        return False
+        rulebase_app.delete_rule(ObjectId(rule_id))
+        return redirect(url_for('view_rulebase'))
     except Exception as e:
-        app.logger.error(f"Error evaluating time condition: {e}")
-        return False
+        app.logger.error(f'Error deleting rule: {str(e)}')
+        return jsonify({'message': f'Error deleting rule: {str(e)}'}), 500
 
 if __name__ == '__main__':
     rules = rulebase_app.get_all_rules()
-    # print(rules)
-    app.run(debug=True, use_reloader=False)  # Disable watchdog to avoid socket error on Windows
+    app.run(debug=True)

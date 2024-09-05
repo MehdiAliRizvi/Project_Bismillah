@@ -1,3 +1,4 @@
+<!-- rulebase.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,10 +18,13 @@
             margin: 5px;
         }
         .center-buttons {
-            text-align: center;
+            text-align: left;
         }
         .condition-group, .rule-group {
             margin-bottom: 20px;
+        }
+        .right-align {
+            text-align: left;
         }
     </style>
 </head>
@@ -28,151 +32,259 @@
     <div class="container">
         <h2>Rule for Disease ABC</h2>
 
-
-        <!-- Add the form tag here -->
-        <form action="{{ url_for('rulebase') }}" method="POST" id="rule-form">
+        <form action="{{ url_for('rulebase') if not rule else url_for('update_rule', rule_id=rule['_id']) }}" method="POST" id="rule-form">
+            <!-- Disease Category Section -->
+            <div class="form-group">
+                <label for="category" style="font-weight: bold;">Category:</label>
+                <input type="text" class="form-control" id="category" name="category" placeholder="Enter Category" required style="width: 500px; height: 70px; font-weight: bold;" value="{{ rule.category if rule else '' }}">
+            </div>
             <!-- Disease Codes Section -->
             <div id="disease-codes">
                 <h4>Disease Codes</h4>
-                <div class="disease-code" id="disease-code-1">
-                    <div class="form-group">
-                        <label for="disease-name-1">Disease Name:</label>
-                        <input type="text" class="form-control" id="disease-name-1" name="disease_names[]" placeholder="Enter Disease Name" required>
+                {% if rule %}
+                    {% for i in range(rule.disease_names|length) %}
+                        <div class="disease-code" id="disease-code-{{ loop.index }}">
+                            <div class="form-group">
+                                <label for="disease-name-{{ loop.index }}">Disease Name:</label>
+                                <input type="text" class="form-control" id="disease-name-{{ loop.index }}" name="disease_names[]" placeholder="Enter Disease Name" required value="{{ rule.disease_names[i] }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="disease-code-{{ loop.index }}">Disease Code:</label>
+                                <input type="text" class="form-control" id="disease-code-{{ loop.index }}" name="disease_codes[]" placeholder="Enter Disease Code" required value="{{ rule.disease_codes[i] }}">
+                            </div>
+                            <div class="right-align">
+                                <button type="button" class="btn btn-danger remove-disease-code" style="display: block;">Remove Disease Code</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="disease-code" id="disease-code-1">
+                        <div class="form-group">
+                            <label for="disease-name-1">Disease Name:</label>
+                            <input type="text" class="form-control" id="disease-name-1" name="disease_names[]" placeholder="Enter Disease Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="disease-code-1">Disease Code:</label>
+                            <input type="text" class="form-control" id="disease-code-1" name="disease_codes[]" placeholder="Enter Disease Code" required>
+                        </div>
+                        <div class="right-align">
+                            <button type="button" class="btn btn-danger remove-disease-code" style="display: none;">Remove Disease Code</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="disease-code-1">Disease Code:</label>
-                        <input type="text" class="form-control" id="disease-code-1" name="disease_codes[]" placeholder="Enter Disease Code" required>
-                    </div>
-                    <div class="center-buttons">
-                        <button type="button" class="btn btn-danger remove-disease-code" style="display: none;">Remove Disease Code</button>
-                    </div>
-                </div>
+                {% endif %}
             </div>
-            <div class="center-buttons">
+            <div class="right-align">
                 <button type="button" id="add-disease-code" class="btn btn-success">Add New Disease Code</button>
             </div>
 
             <!-- Rules Section -->
             <div id="rules">
                 <h4>Rules</h4>
-                <!-- Rule Template -->
-                <div class="rule-group" id="rule-1">
-                    <h5>Rule 1</h5>
-                    <div class="conditions" id="conditions-1">
-                        <!-- Condition Template -->
-                        <div class="condition-group" id="condition-1-1">
-                            <h6>Condition 1</h6>
-                            <div class="flex-container">
-                                <div class="form-group flex-item">
-                                    <label for="condition-type-1-1">Condition Type:</label>
-                                    <select class="form-control condition-type" id="condition-type-1-1" name="conditions[1][]">
-                                        <option value="range">Range Condition</option>
-                                        <option value="comparison">Comparison Condition</option>
-                                        <option value="time-dependent">Time Dependent Condition</option>
-
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="parameter-1-1">Parameter:</label>
-                                    <select class="form-control parameter" id="parameter-1-1" name="parameters[1][]">
-                                        <option value="Hemoglobin">Hemoglobin</option>
-                                        <option value="Glucose">Glucose</option>
-                                        <option value="Potassium">Potassium</option>
-                                        <option value="gl">GL</option>
-                                        <option value="Sodium">Sodium</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item range-condition" style="display: none;">
-                                    <label for="min-value-1-1">Minimum Value:</label>
-                                    <input type="number" class="form-control min-value" id="min-value-1-1" name="min_values[1][]" placeholder="Enter minimum value" step="0.01">
-                                </div>
-                                <div class="form-group flex-item range-condition" style="display: none;">
-                                    <label for="max-value-1-1">Maximum Value:</label>
-                                    <input type="number" class="form-control max-value" id="max-value-1-1" name="max_values[1][]" placeholder="Enter maximum value" step="0.01">
-                                </div>
-                                <div class="form-group flex-item comparison-condition" style="display: none;">
-                                    <label for="operator-comparison-1-1">Operator:</label>
-                                    <select class="form-control operator" id="operator-comparison-1-1" name="operators[1][]">
-                                        <option value="greater">></option>
-                                        <option value="less"><</option>
-                                        <option value="equal">=</option>
-                                        <option value="greater or equal">>=</option>
-                                        <option value="less or equal"><=</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item comparison-condition" style="display: none;">
-                                    <label for="value-comparison-1-1">Value:</label>
-                                    <input type="number" class="form-control comparison-value" id="value-comparison-1-1" name="comparison_values[1][]" placeholder="Enter value">
-                                </div>
-                                
-                                <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                                    <label for="time-1-1">Time:</label>
-                                    <input type="number" class="form-control time-value" id="time-1-1" name="time_values[1][]" placeholder="Enter time">
-                                </div>
-                                <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                                    <label for="operator-time-1-1">Operator:</label>
-                                    <select class="form-control operator" id="operator-time-1-1" name="operators[1][]">
-                                        <option value="greater">></option>
-                                        <option value="less"><</option>
-                                        <option value="equal">=</option>
-                                        <option value="greater or equal">>=</option>
-                                        <option value="less or equal"><=</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                                    <label for="value-time-1-1">Value in TDC:</label>
-                                    <input type="number" class="form-control comparison-value" id="value-time-1-1" name="comparison_values[1][]" placeholder="Enter value">
-                                </div>
-                                
-                                 <!-- //////  -->
-
-                                <div class="form-group flex-item">
-                                    <label for="unit-1-1">Unit:</label>
-                                    <select class="form-control unit" id="unit-1-1" name="units[1][]">
-                                        <option value="mg/dL">mg/dL</option>
-                                        <option value="g/dL">g/dL</option>
-                                        <option value="mmHg">mmHg</option>
-                                        <option value="%">%</option>
-                                        <option value="bpm">bpm</option>
-                                    </select>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="age-min-1-1">Age Range:</label>
-                                    <input type="number" class="form-control age-min" id="age-min-1-1" name="age_min[1][]" placeholder="From Age" min="0" required>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="age-max-1-1">Age Range:</label>
-                                    <input type="number" class="form-control age-max" id="age-max-1-1" name="age_max[1][]" placeholder="To Age" min="0" required>
-                                </div>
-                                <div class="form-group flex-item">
-                                    <label for="gender-1-1">Gender:</label>
-                                    <select class="form-control gender" id="gender-1-1" name="genders[1][]" required>
-                                        <option value="all">ALL</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                </div>
+                {% if rule %}
+                    {% for rule_entry in rule.rules %}
+                        <div class="rule-group" id="rule-{{ loop.index }}">
+                            <h5>Rule {{ loop.index }}</h5>
+                            <div class="conditions" id="conditions-{{ loop.index }}">
+                                {% for condition in rule_entry.conditions %}
+                                    <div class="condition-group" id="condition-{{ loop.index }}-{{ loop.index }}">
+                                        <h6>Condition {{ loop.index }}</h6>
+                                        <div class="flex-container">
+                                            <div class="form-group flex-item">
+                                                <label for="condition-type-{{ loop.parentloop.index }}-{{ loop.index }}">Condition Type:</label>
+                                                <select class="form-control condition-type" id="condition-type-{{ loop.parentloop.index }}-{{ loop.index }}" name="conditions[{{ loop.parentloop.index }}][]">
+                                                    <option value="range" {% if condition.type == 'range' %}selected{% endif %}>Range Condition</option>
+                                                    <option value="comparison" {% if condition.type == 'comparison' %}selected{% endif %}>Comparison Condition</option>
+                                                    <option value="time-dependent" {% if condition.type == 'time-dependent' %}selected{% endif %}>Time Dependent Condition</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group flex-item">
+                                                <label for="parameter-{{ loop.parentloop.index }}-{{ loop.index }}">Parameter:</label>
+                                                <select class="form-control parameter" id="parameter-{{ loop.parentloop.index }}-{{ loop.index }}" name="parameters[{{ loop.parentloop.index }}][]">
+                                                    <!-- Options will be populated dynamically -->
+                                                </select>
+                                            </div>
+                                            <div class="form-group flex-item range-condition" style="display: none;">
+                                                <label for="min-value-{{ loop.parentloop.index }}-{{ loop.index }}">Minimum Value:</label>
+                                                <input type="number" class="form-control min-value" id="min-value-{{ loop.parentloop.index }}-{{ loop.index }}" name="min_values[{{ loop.parentloop.index }}][]" placeholder="Enter minimum value" step="0.01" value="{{ condition.min_value }}">
+                                            </div>
+                                            <div class="form-group flex-item range-condition" style="display: none;">
+                                                <label for="max-value-{{ loop.parentloop.index }}-{{ loop.index }}">Maximum Value:</label>
+                                                <input type="number" class="form-control max-value" id="max-value-{{ loop.parentloop.index }}-{{ loop.index }}" name="max_values[{{ loop.parentloop.index }}][]" placeholder="Enter maximum value" step="0.01" value="{{ condition.max_value }}">
+                                            </div>
+                                            <div class="form-group flex-item comparison-condition" style="display: none;">
+                                                <label for="operator-comparison-{{ loop.parentloop.index }}-{{ loop.index }}">Operator:</label>
+                                                <select class="form-control operator" id="operator-comparison-{{ loop.parentloop.index }}-{{ loop.index }}" name="operators[{{ loop.parentloop.index }}][]">
+                                                    <option value="greater" {% if condition.operator == 'greater' %}selected{% endif %}>></option>
+                                                    <option value="less" {% if condition.operator == 'less' %}selected{% endif %}><</option>
+                                                    <option value="equal" {% if condition.operator == 'equal' %}selected{% endif %}>=</option>
+                                                    <option value="greater or equal" {% if condition.operator == 'greater or equal' %}selected{% endif %}>>=</option>
+                                                    <option value="less or equal" {% if condition.operator == 'less or equal' %}selected{% endif %}><=</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group flex-item comparison-condition" style="display: none;">
+                                                <label for="value-comparison-{{ loop.parentloop.index }}-{{ loop.index }}">Value:</label>
+                                                <input type="number" class="form-control comparison-value" id="value-comparison-{{ loop.parentloop.index }}-{{ loop.index }}" name="comparison_values[{{ loop.parentloop.index }}][]" placeholder="Enter value" value="{{ condition.comparison_value }}">
+                                            </div>
+                                            <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                                <label for="time-{{ loop.parentloop.index }}-{{ loop.index }}">Time:</label>
+                                                <input type="number" class="form-control time-value" id="time-{{ loop.parentloop.index }}-{{ loop.index }}" name="time_values[{{ loop.parentloop.index }}][]" placeholder="Enter time" value="{{ condition.time }}">
+                                            </div>
+                                            <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                                <label for="operator-time-{{ loop.parentloop.index }}-{{ loop.index }}">Operator:</label>
+                                                <select class="form-control operator" id="operator-time-{{ loop.parentloop.index }}-{{ loop.index }}" name="operators[{{ loop.parentloop.index }}][]">
+                                                    <option value="greater" {% if condition.operator == 'greater' %}selected{% endif %}>></option>
+                                                    <option value="less" {% if condition.operator == 'less' %}selected{% endif %}><</option>
+                                                    <option value="equal" {% if condition.operator == 'equal' %}selected{% endif %}>=</option>
+                                                    <option value="greater or equal" {% if condition.operator == 'greater or equal' %}selected{% endif %}>>=</option>
+                                                    <option value="less or equal" {% if condition.operator == 'less or equal' %}selected{% endif %}><=</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                                <label for="value-time-{{ loop.parentloop.index }}-{{ loop.index }}">Value:</label>
+                                                <input type="number" class="form-control comparison-value" id="value-time-{{ loop.parentloop.index }}-{{ loop.index }}" name="comparison_time_values[{{ loop.parentloop.index }}][]" placeholder="Enter value" value="{{ condition.comparison_time_value }}">
+                                            </div>
+                                            <div class="form-group flex-item">
+                                                <label for="unit-{{ loop.parentloop.index }}-{{ loop.index }}">Unit:</label>
+                                                <select class="form-control unit" id="unit-{{ loop.parentloop.index }}-{{ loop.index }}" name="units[{{ loop.parentloop.index }}][]">
+                                                    <!-- Options will be populated dynamically -->
+                                                </select>
+                                            </div>
+                                            <div class="form-group flex-item">
+                                                <label for="age-min-{{ loop.parentloop.index }}-{{ loop.index }}">Age Range:</label>
+                                                <input type="number" class="form-control age-min" id="age-min-{{ loop.parentloop.index }}-{{ loop.index }}" name="age_min[{{ loop.parentloop.index }}][]" placeholder="From Age" min="0" required value="{{ condition.age_min }}">
+                                            </div>
+                                            <div class="form-group flex-item">
+                                                <label for="age-max-{{ loop.parentloop.index }}-{{ loop.index }}">Age Range:</label>
+                                                <input type="number" class="form-control age-max" id="age-max-{{ loop.parentloop.index }}-{{ loop.index }}" name="age_max[{{ loop.parentloop.index }}][]" placeholder="To Age" min="0" required value="{{ condition.age_max }}">
+                                            </div>
+                                            <div class="form-group flex-item">
+                                                <label for="gender-{{ loop.parentloop.index }}-{{ loop.index }}">Gender:</label>
+                                                <select class="form-control gender" id="gender-{{ loop.parentloop.index }}-{{ loop.index }}" name="genders[{{ loop.parentloop.index }}][]" required>
+                                                    <option value="all" {% if condition.gender == 'all' %}selected{% endif %}>ALL</option>
+                                                    <option value="male" {% if condition.gender == 'male' %}selected{% endif %}>Male</option>
+                                                    <option value="female" {% if condition.gender == 'female' %}selected{% endif %}>Female</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="right-align">
+                                            <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
-                            <div class="center-buttons">
-                                <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
+                            <div class="right-align">
+                                <button type="button" class="btn btn-primary add-condition" data-rule="{{ loop.index }}">Add Condition</button>
+                                <button type="button" class="btn btn-danger remove-rule" style="display: block;">Remove Rule</button>
                             </div>
                         </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Rule Template -->
+                    <div class="rule-group" id="rule-1">
+                        <h5>Rule 1</h5>
+                        <div class="conditions" id="conditions-1">
+                            <!-- Condition Template -->
+                            <div class="condition-group" id="condition-1-1">
+                                <h6>Condition 1</h6>
+                                <div class="flex-container">
+                                    <div class="form-group flex-item">
+                                        <label for="condition-type-1-1">Condition Type:</label>
+                                        <select class="form-control condition-type" id="condition-type-1-1" name="conditions[1][]">
+                                            <option value="range">Range Condition</option>
+                                            <option value="comparison">Comparison Condition</option>
+                                            <option value="time-dependent">Time Dependent Condition</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-item">
+                                        <label for="parameter-1-1">Parameter:</label>
+                                        <select class="form-control parameter" id="parameter-1-1" name="parameters[1][]">
+                                            <!-- Options will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-item range-condition" style="display: none;">
+                                        <label for="min-value-1-1">Minimum Value:</label>
+                                        <input type="number" class="form-control min-value" id="min-value-1-1" name="min_values[1][]" placeholder="Enter minimum value" step="0.01">
+                                    </div>
+                                    <div class="form-group flex-item range-condition" style="display: none;">
+                                        <label for="max-value-1-1">Maximum Value:</label>
+                                        <input type="number" class="form-control max-value" id="max-value-1-1" name="max_values[1][]" placeholder="Enter maximum value" step="0.01">
+                                    </div>
+                                    <div class="form-group flex-item comparison-condition" style="display: none;">
+                                        <label for="operator-comparison-1-1">Operator:</label>
+                                        <select class="form-control operator" id="operator-comparison-1-1" name="operators[1][]">
+                                            <option value="greater">></option>
+                                            <option value="less"><</option>
+                                            <option value="equal">=</option>
+                                            <option value="greater or equal">>=</option>
+                                            <option value="less or equal"><=</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-item comparison-condition" style="display: none;">
+                                        <label for="value-comparison-1-1">Value:</label>
+                                        <input type="number" class="form-control comparison-value" id="value-comparison-1-1" name="comparison_values[1][]" placeholder="Enter value">
+                                    </div>
+                                    <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                        <label for="time-1-1">Time:</label>
+                                        <input type="number" class="form-control time-value" id="time-1-1" name="time_values[1][]" placeholder="Enter time">
+                                    </div>
+                                    <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                        <label for="operator-time-1-1">Operator:</label>
+                                        <select class="form-control operator" id="operator-time-1-1" name="operators[1][]">
+                                            <option value="greater">></option>
+                                            <option value="less"><</option>
+                                            <option value="equal">=</option>
+                                            <option value="greater or equal">>=</option>
+                                            <option value="less or equal"><=</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                        <label for="value-time-1-1">Value:</label>
+                                        <input type="number" class="form-control comparison-value" id="value-time-1-1" name="comparison_time_values[1][]" placeholder="Enter value">
+                                    </div>
+                                    <div class="form-group flex-item">
+                                        <label for="unit-1-1">Unit:</label>
+                                        <select class="form-control unit" id="unit-1-1" name="units[1][]">
+                                            <!-- Options will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-item">
+                                        <label for="age-min-1-1">Age Range:</label>
+                                        <input type="number" class="form-control age-min" id="age-min-1-1" name="age_min[1][]" placeholder="From Age" min="0" required>
+                                    </div>
+                                    <div class="form-group flex-item">
+                                        <label for="age-max-1-1">Age Range:</label>
+                                        <input type="number" class="form-control age-max" id="age-max-1-1" name="age_max[1][]" placeholder="To Age" min="0" required>
+                                    </div>
+                                    <div class="form-group flex-item">
+                                        <label for="gender-1-1">Gender:</label>
+                                        <select class="form-control gender" id="gender-1-1" name="genders[1][]" required>
+                                            <option value="all">ALL</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="right-align">
+                                    <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-align">
+                            <button type="button" class="btn btn-primary add-condition" data-rule="1">Add Condition</button>
+                            <button type="button" class="btn btn-danger remove-rule" style="display: none;">Remove Rule</button>
+                        </div>
                     </div>
-                    <div class="center-buttons">
-                        <button type="button" class="btn btn-primary add-condition" data-rule="1">Add Condition</button>
-                        <button type="button" class="btn btn-danger remove-rule" style="display: none;">Remove Rule</button>
-                    </div>
-                </div>
+                {% endif %}
             </div>
 
-            <div class="center-buttons">
+            <div class="right-align">
                 <button type="button" id="add-rule" class="btn btn-success">Add New Rule</button>
             </div>
-<br>
-<br>
+            <br>
+            <br>
 
             <!-- Submit Button -->
-            <div class="center-buttons">
+            <div class="right-align">
                 <button type="submit" class="btn btn-primary">Submit</button>
             </div>
         </form>
@@ -181,383 +293,412 @@
     <!-- JavaScript to Handle Dynamic Form Elements -->
     <script>
 $(document).ready(function () {
-    let ruleCount = 1;
-    let conditionCount = 1;
-    let diseaseCodeCount = 1;
+    let ruleCount = {{ rule.rules|length if rule else 1 }};
+    let conditionCount = {};
+    let diseaseCodeCount = {{ rule.disease_names|length if rule else 1 }};
+    let mappings = {};
+
+    // Fetch mappings.json
+    $.getJSON('/static/mappings.json', function(data) {
+        mappings = data;
+        initializeParametersAndUnits();
+    }).fail(function() {
+        console.error('Error loading mappings.json');
+    });
+
+    function initializeParametersAndUnits() {
+        $('.parameter').each(function () {
+            const parameterSelect = $(this);
+            parameterSelect.empty();
+            const sortedKeys = Object.keys(mappings).sort();
+            $.each(sortedKeys, function(index, key) {
+                parameterSelect.append($('<option>', {
+                    value: key,
+                    text: key
+                }));
+            });
+
+            parameterSelect.change(function () {
+                const parameter = $(this).val();
+                const unitSelect = $(this).closest('.condition-group').find('.unit');
+                unitSelect.empty();
+                if (mappings[parameter] && mappings[parameter].units) {
+                    $.each(mappings[parameter].units, function(index, unit) {
+                        if (unit !== null) {
+                            unitSelect.append($('<option>', {
+                                value: unit,
+                                text: unit
+                            }));
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    function initializeParametersAndUnitsForNewCondition(ruleId, conditionId) {
+        const parameterSelect = $(`#parameter-${ruleId}-${conditionId}`);
+        parameterSelect.empty();
+        const sortedKeys = Object.keys(mappings).sort();
+        $.each(sortedKeys, function(index, key) {
+            parameterSelect.append($('<option>', {
+                value: key,
+                text: key
+            }));
+        });
+
+        parameterSelect.change(function () {
+            const parameter = $(this).val();
+            const unitSelect = $(this).closest('.condition-group').find('.unit');
+            unitSelect.empty();
+            if (mappings[parameter] && mappings[parameter].units) {
+                $.each(mappings[parameter].units, function(index, unit) {
+                    if (unit !== null) {
+                        unitSelect.append($('<option>', {
+                            value: unit,
+                            text: unit
+                        }));
+                    }
+                });
+            }
+        });
+    }
 
     function toggleConditionFields(conditionRow, selectedType) {
+        conditionRow.find('.range-condition').hide();
+        conditionRow.find('.comparison-condition').hide();
+        conditionRow.find('.time-dependent-condition').hide();
+
         if (selectedType === 'range') {
             conditionRow.find('.range-condition').show();
-            conditionRow.find('.comparison-condition, .time-dependent-condition').hide();
-            conditionRow.find('.comparison-value, .time-value').removeAttr('required');
         } else if (selectedType === 'comparison') {
             conditionRow.find('.comparison-condition').show();
-            conditionRow.find('.range-condition, .time-dependent-condition').hide();
-            conditionRow.find('.comparison-value').attr('required', 'required');
-            conditionRow.find('.time-value').removeAttr('required');
         } else if (selectedType === 'time-dependent') {
             conditionRow.find('.time-dependent-condition').show();
-            conditionRow.find('.range-condition, .comparison-condition').hide();
-            conditionRow.find('.time-value').attr('required', 'required');
-            conditionRow.find('.comparison-value').attr('required', 'required');
         }
     }
 
     function initializeConditionFields() {
         $('.condition-type').each(function () {
             const conditionGroup = $(this).closest('.condition-group');
-            if ($(this).val() === 'range') {
-                conditionGroup.find('.range-condition').show();
-                conditionGroup.find('.comparison-condition, .time-dependent-condition').hide();
-            } else if ($(this).val() === 'comparison') {
-                conditionGroup.find('.range-condition, .time-dependent-condition').hide();
-                conditionGroup.find('.comparison-condition').show();
-            } else if ($(this).val() === 'time-dependent') {
-                conditionGroup.find('.range-condition, .comparison-condition').hide();
-                conditionGroup.find('.time-dependent-condition').show();
-            }
+            toggleConditionFields(conditionGroup, $(this).val());
         });
 
         $('.condition-type').change(function () {
             const conditionGroup = $(this).closest('.condition-group');
-            if ($(this).val() === 'range') {
-                conditionGroup.find('.range-condition').show();
-                conditionGroup.find('.comparison-condition, .time-dependent-condition').hide();
-            } else if ($(this).val() === 'comparison') {
-                conditionGroup.find('.range-condition, .time-dependent-condition').hide();
-                conditionGroup.find('.comparison-condition').show();
-            } else if ($(this).val() === 'time-dependent') {
-                conditionGroup.find('.range-condition, .comparison-condition').hide();
-                conditionGroup.find('.time-dependent-condition').show();
+            toggleConditionFields(conditionGroup, $(this).val());
+        });
+    }
+
+    // Add new disease code
+    $('#add-disease-code').click(function () {
+        diseaseCodeCount++;
+        const diseaseCodeHtml = `
+            <div class="disease-code" id="disease-code-${diseaseCodeCount}">
+                <div class="form-group">
+                    <label for="disease-name-${diseaseCodeCount}">Disease Name:</label>
+                    <input type="text" class="form-control" id="disease-name-${diseaseCodeCount}" name="disease_names[]" placeholder="Enter Disease Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="disease-code-${diseaseCodeCount}">Disease Code:</label>
+                    <input type="text" class="form-control" id="disease-code-${diseaseCodeCount}" name="disease_codes[]" placeholder="Enter Disease Code" required>
+                </div>
+                <div class="right-align">
+                    <button type="button" class="btn btn-danger remove-disease-code" style="display: block;">Remove Disease Code</button>
+                </div>
+            </div>
+        `;
+        $('#disease-codes').append(diseaseCodeHtml);
+        updateRemoveButtons();
+    });
+
+    // Add new rule
+    $('#add-rule').click(function () {
+        ruleCount++;
+        conditionCount[ruleCount] = 1;
+        const ruleHtml = `
+            <div class="rule-group" id="rule-${ruleCount}">
+                <h5>Rule ${ruleCount}</h5>
+                <div class="conditions" id="conditions-${ruleCount}">
+                    <div class="condition-group" id="condition-${ruleCount}-1">
+                        <h6>Condition 1</h6>
+                        <div class="flex-container">
+                            <div class="form-group flex-item">
+                                <label for="condition-type-${ruleCount}-1">Condition Type:</label>
+                                <select class="form-control condition-type" id="condition-type-${ruleCount}-1" name="conditions[${ruleCount}][]">
+                                    <option value="range">Range Condition</option>
+                                    <option value="comparison">Comparison Condition</option>
+                                    <option value="time-dependent">Time-Dependent Condition</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-item">
+                                <label for="parameter-${ruleCount}-1">Parameter:</label>
+                                <select class="form-control parameter" id="parameter-${ruleCount}-1" name="parameters[${ruleCount}][]">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group flex-item range-condition" style="display: none;">
+                                <label for="min-value-${ruleCount}-1">Minimum Value:</label>
+                                <input type="number" class="form-control min-value" id="min-value-${ruleCount}-1" name="min_values[${ruleCount}][]" placeholder="Enter minimum value">
+                            </div>
+                            <div class="form-group flex-item range-condition" style="display: none;">
+                                <label for="max-value-${ruleCount}-1">Maximum Value:</label>
+                                <input type="number" class="form-control max-value" id="max-value-${ruleCount}-1" name="max_values[${ruleCount}][]" placeholder="Enter maximum value">
+                            </div>
+                            <div class="form-group flex-item comparison-condition" style="display: none;">
+                                <label for="operator-comparison-${ruleCount}-1">Operator:</label>
+                                <select class="form-control operator" id="operator-comparison-${ruleCount}-1" name="operators[${ruleCount}][]">
+                                    <option value="greater">></option>
+                                    <option value="less"><</option>
+                                    <option value="equal">=</option>
+                                    <option value="greater or equal">>=</option>
+                                    <option value="less or equal"><=</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-item comparison-condition" style="display: none;">
+                                <label for="value-comparison-${ruleCount}-1">Value:</label>
+                                <input type="number" class="form-control comparison-value" id="value-comparison-${ruleCount}-1" name="comparison_values[${ruleCount}][]" placeholder="Enter value">
+                            </div>
+                            <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                <label for="time-${ruleCount}-1">Time:</label>
+                                <input type="number" class="form-control time-value" id="time-${ruleCount}-1" name="time_values[${ruleCount}][]" placeholder="Enter time">
+                            </div>
+                            <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                <label for="operator-time-${ruleCount}-1">Operator:</label>
+                                <select class="form-control operator" id="operator-time-${ruleCount}-1" name="operators[${ruleCount}][]">
+                                    <option value="greater">></option>
+                                    <option value="less"><</option>
+                                    <option value="equal">=</option>
+                                    <option value="greater or equal">>=</option>
+                                    <option value="less or equal"><=</option>
+                                </select>
+                            </div>
+                            <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                                <label for="value-time-${ruleCount}-1">Value:</label>
+                                <input type="number" class="form-control comparison-value" id="value-time-${ruleCount}-1" name="comparison_time_values[${ruleCount}][]" placeholder="Enter value">
+                            </div>
+                            <div class="form-group flex-item">
+                                <label for="unit-${ruleCount}-1">Unit:</label>
+                                <select class="form-control unit" id="unit-${ruleCount}-1" name="units[${ruleCount}][]">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group flex-item">
+                                <label for="age-min-${ruleCount}-1">Age Range:</label>
+                                <input type="number" class="form-control age-min" id="age-min-${ruleCount}-1" name="age_min[${ruleCount}][]" placeholder="From Age" min="0" required>
+                            </div>
+                            <div class="form-group flex-item">
+                                <label for="age-max-${ruleCount}-1">Age Range:</label>
+                                <input type="number" class="form-control age-max" id="age-max-${ruleCount}-1" name="age_max[${ruleCount}][]" placeholder="To Age" min="0" required>
+                            </div>
+                            <div class="form-group flex-item">
+                                <label for="gender-${ruleCount}-1">Gender:</label>
+                                <select class="form-control gender" id="gender-${ruleCount}-1" name="genders[${ruleCount}][]" required>
+                                    <option value="all">ALL</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="right-align">
+                            <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-align">
+                    <button type="button" class="btn btn-primary add-condition" data-rule="${ruleCount}">Add Condition</button>
+                    <button type="button" class="btn btn-danger remove-rule" style="display: block;">Remove Rule</button>
+                </div>
+            </div>
+        `;
+        $('#rules').append(ruleHtml);
+        updateRemoveButtons();
+        initializeConditionFields();
+        initializeParametersAndUnitsForNewCondition(ruleCount, 1);
+    });
+
+    // Add new condition
+    $(document).on('click', '.add-condition', function () {
+        const ruleId = $(this).data('rule');
+        conditionCount[ruleId]++;
+        const conditionHtml = `
+            <div class="condition-group" id="condition-${ruleId}-${conditionCount[ruleId]}">
+                <h6>Condition ${conditionCount[ruleId]}</h6>
+                <div class="flex-container">
+                    <div class="form-group flex-item">
+                        <label for="condition-type-${ruleId}-${conditionCount[ruleId]}">Condition Type:</label>
+                        <select class="form-control condition-type" id="condition-type-${ruleId}-${conditionCount[ruleId]}" name="conditions[${ruleId}][]">
+                            <option value="range">Range Condition</option>
+                            <option value="comparison">Comparison Condition</option>
+                            <option value="time-dependent">Time-Dependent Condition</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-item">
+                        <label for="parameter-${ruleId}-${conditionCount[ruleId]}">Parameter:</label>
+                        <select class="form-control parameter" id="parameter-${ruleId}-${conditionCount[ruleId]}" name="parameters[${ruleId}][]">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group flex-item range-condition" style="display: none;">
+                        <label for="min-value-${ruleId}-${conditionCount[ruleId]}">Minimum Value:</label>
+                        <input type="number" class="form-control min-value" id="min-value-${ruleId}-${conditionCount[ruleId]}" name="min_values[${ruleId}][]" placeholder="Enter minimum value">
+                    </div>
+                    <div class="form-group flex-item range-condition" style="display: none;">
+                        <label for="max-value-${ruleId}-${conditionCount[ruleId]}">Maximum Value:</label>
+                        <input type="number" class="form-control max-value" id="max-value-${ruleId}-${conditionCount[ruleId]}" name="max_values[${ruleId}][]" placeholder="Enter maximum value">
+                    </div>
+                    <div class="form-group flex-item comparison-condition" style="display: none;">
+                        <label for="operator-comparison-${ruleId}-${conditionCount[ruleId]}">Operator:</label>
+                        <select class="form-control operator" id="operator-comparison-${ruleId}-${conditionCount[ruleId]}" name="operators[${ruleId}][]">
+                            <option value="greater">></option>
+                            <option value="less"><</option>
+                            <option value="equal">=</option>
+                            <option value="greater or equal">>=</option>
+                            <option value="less or equal"><=</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-item comparison-condition" style="display: none;">
+                        <label for="value-comparison-${ruleId}-${conditionCount[ruleId]}">Value:</label>
+                        <input type="number" class="form-control comparison-value" id="value-comparison-${ruleId}-${conditionCount[ruleId]}" name="comparison_values[${ruleId}][]" placeholder="Enter value">
+                    </div>
+                    <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                        <label for="time-${ruleId}-${conditionCount[ruleId]}">Time:</label>
+                        <input type="number" class="form-control time-value" id="time-${ruleId}-${conditionCount[ruleId]}" name="time_values[${ruleId}][]" placeholder="Enter time">
+                    </div>
+                    <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                        <label for="operator-time-${ruleId}-${conditionCount[ruleId]}">Operator:</label>
+                        <select class="form-control operator" id="operator-time-${ruleId}-${conditionCount[ruleId]}" name="operators[${ruleId}][]">
+                            <option value="greater">></option>
+                            <option value="less"><</option>
+                            <option value="equal">=</option>
+                            <option value="greater or equal">>=</option>
+                            <option value="less or equal"><=</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-item time-dependent-condition" style="display: none;">
+                        <label for="value-time-${ruleId}-${conditionCount[ruleId]}">Value:</label>
+                        <input type="number" class="form-control comparison-value" id="value-time-${ruleId}-${conditionCount[ruleId]}" name="comparison_time_values[${ruleId}][]" placeholder="Enter value">
+                    </div>
+                    <div class="form-group flex-item">
+                        <label for="unit-${ruleId}-${conditionCount[ruleId]}">Unit:</label>
+                        <select class="form-control unit" id="unit-${ruleId}-${conditionCount[ruleId]}" name="units[${ruleId}][]">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group flex-item">
+                        <label for="age-min-${ruleId}-${conditionCount[ruleId]}">Age Range:</label>
+                        <input type="number" class="form-control age-min" id="age-min-${ruleId}-${conditionCount[ruleId]}" name="age_min[${ruleId}][]" placeholder="From Age" min="0" required>
+                    </div>
+                    <div class="form-group flex-item">
+                        <label for="age-max-${ruleId}-${conditionCount[ruleId]}">Age Range:</label>
+                        <input type="number" class="form-control age-max" id="age-max-${ruleId}-${conditionCount[ruleId]}" name="age_max[${ruleId}][]" placeholder="To Age" min="0" required>
+                    </div>
+                    <div class="form-group flex-item">
+                        <label for="gender-${ruleId}-${conditionCount[ruleId]}">Gender:</label>
+                        <select class="form-control gender" id="gender-${ruleId}-${conditionCount[ruleId]}" name="genders[${ruleId}][]" required>
+                            <option value="all">ALL</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="right-align">
+                    <button type="button" class="btn btn-danger remove-condition" style="display: block;">Remove Condition</button>
+                </div>
+            </div>
+        `;
+        $(`#conditions-${ruleId}`).append(conditionHtml);
+        updateRemoveButtons();
+        initializeConditionFields();
+        initializeParametersAndUnitsForNewCondition(ruleId, conditionCount[ruleId]); // Attach event listeners to the new condition
+    });
+
+    // Remove condition
+    $(document).on('click', '.remove-condition', function () {
+        const conditionGroup = $(this).closest('.condition-group');
+        const ruleId = conditionGroup.closest('.rule-group').attr('id').split('-')[1];
+        conditionGroup.remove();
+        updateConditionNumbers(ruleId);
+        updateRemoveButtons();
+    });
+
+    function updateConditionNumbers(ruleId) {
+        $(`#conditions-${ruleId} .condition-group`).each(function (index) {
+            const conditionNumber = index + 1;
+            $(this).attr('id', `condition-${ruleId}-${conditionNumber}`);
+            $(this).find('h6').text(`Condition ${conditionNumber}`);
+            $(this).find('.condition-type').attr('id', `condition-type-${ruleId}-${conditionNumber}`);
+            $(this).find('.parameter').attr('id', `parameter-${ruleId}-${conditionNumber}`);
+            $(this).find('.min-value').attr('id', `min-value-${ruleId}-${conditionNumber}`);
+            $(this).find('.max-value').attr('id', `max-value-${ruleId}-${conditionNumber}`);
+            $(this).find('.operator').attr('id', `operator-comparison-${ruleId}-${conditionNumber}`);
+            $(this).find('.comparison-value').attr('id', `value-comparison-${ruleId}-${conditionNumber}`);
+            $(this).find('.time-value').attr('id', `time-${ruleId}-${conditionNumber}`);
+            $(this).find('.unit').attr('id', `unit-${ruleId}-${conditionNumber}`);
+            $(this).find('.age-min').attr('id', `age-min-${ruleId}-${conditionNumber}`);
+            $(this).find('.age-max').attr('id', `age-max-${ruleId}-${conditionNumber}`);
+            $(this).find('.gender').attr('id', `gender-${ruleId}-${conditionNumber}`);
+        });
+        conditionCount[ruleId] = $(`#conditions-${ruleId} .condition-group`).length;
+    }
+
+    // Remove rule
+    $(document).on('click', '.remove-rule', function () {
+        const ruleGroup = $(this).closest('.rule-group');
+        const ruleId = ruleGroup.attr('id').split('-')[1];
+        delete conditionCount[ruleId];
+        ruleGroup.remove();
+        updateRuleNumbers();
+        updateRemoveButtons();
+    });
+
+    function updateRuleNumbers() {
+        $('.rule-group').each(function (index) {
+            const ruleNumber = index + 1;
+            $(this).attr('id', `rule-${ruleNumber}`);
+            $(this).find('h5').text(`Rule ${ruleNumber}`);
+            $(this).find('.conditions').attr('id', `conditions-${ruleNumber}`);
+            $(this).find('.add-condition').attr('data-rule', ruleNumber);
+            $(this).find('.remove-rule').attr('id', `remove-rule-${ruleNumber}`);
+            updateConditionNumbers(ruleNumber);
+        });
+        ruleCount = $('.rule-group').length;
+    }
+
+    // Remove disease code
+    $(document).on('click', '.remove-disease-code', function () {
+        $(this).closest('.disease-code').remove();
+        updateRemoveButtons();
+    });
+
+    function updateRemoveButtons() {
+        $('.remove-condition').each(function () {
+            if ($(this).closest('.conditions').find('.condition-group').length <= 1) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
+
+        $('.remove-rule').each(function () {
+            if ($(this).closest('#rules').find('.rule-group').length <= 1) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
+
+        $('.remove-disease-code').each(function () {
+            if ($(this).closest('#disease-codes').find('.disease-code').length <= 1) {
+                $(this).hide();
+            } else {
+                $(this).show();
             }
         });
     }
 
     initializeConditionFields();
 });
-
-
-        // Add new disease code
-        $('#add-disease-code').click(function () {
-            diseaseCodeCount++;
-            const diseaseCodeHtml = `
-                <div class="disease-code" id="disease-code-${diseaseCodeCount}">
-                    <div class="form-group">
-                        <label for="disease-name-${diseaseCodeCount}">Disease Name:</label>
-                        <input type="text" class="form-control" id="disease-name-${diseaseCodeCount}" name="disease_names[]" placeholder="Enter Disease Name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="disease-code-${diseaseCodeCount}">Disease Code:</label>
-                        <input type="text" class="form-control" id="disease-code-${diseaseCodeCount}" name="disease_codes[]" placeholder="Enter Disease Code" required>
-                    </div>
-                    <div class="center-buttons">
-                        <button type="button" class="btn btn-danger remove-disease-code" style="display: block;">Remove Disease Code</button>
-                    </div>
-                </div>
-            `;
-            $('#disease-codes').append(diseaseCodeHtml);
-            updateRemoveButtons();
-        });
-
-// Add new rule
-$('#add-rule').click(function () {
-    ruleCount++;
-    conditionCount = 1;
-    const ruleHtml = `
-        <div class="rule-group" id="rule-${ruleCount}">
-            <h5>Rule ${ruleCount}</h5>
-            <div class="conditions" id="conditions-${ruleCount}">
-                <div class="condition-group" id="condition-${ruleCount}-1">
-                    <h6>Condition 1</h6>
-                    <div class="flex-container">
-                        <div class="form-group flex-item">
-                            <label for="condition-type-${ruleCount}-1">Condition Type:</label>
-                            <select class="form-control condition-type" id="condition-type-${ruleCount}-1" name="conditions[${ruleCount}][]">
-                                <option value="range">Range Condition</option>
-                                <option value="comparison">Comparison Condition</option>
-                                <option value="time-dependent">Time-Dependent Condition</option>
-                            </select>
-                        </div>
-                        <div class="form-group flex-item">
-                            <label for="parameter-${ruleCount}-1">Parameter:</label>
-                            <select class="form-control parameter" id="parameter-${ruleCount}-1" name="parameters[${ruleCount}][]">
-                                <option value="Hemoglobin">Hemoglobin</option>
-                                <option value="Glucose">Glucose</option>
-                                <option value="Potassium">Potassium</option>
-                                <option value="gl">GL</option>
-                                <option value="Sodium">Sodium</option>
-                            </select>
-                        </div>
-                        <div class="form-group flex-item range-condition" style="display: none;">
-                            <label for="min-value-${ruleCount}-1">Minimum Value:</label>
-                            <input type="number" class="form-control min-value" id="min-value-${ruleCount}-1" name="min_values[${ruleCount}][]" placeholder="Enter minimum value">
-                        </div>
-                        <div class="form-group flex-item range-condition" style="display: none;">
-                            <label for="max-value-${ruleCount}-1">Maximum Value:</label>
-                            <input type="number" class="form-control max-value" id="max-value-${ruleCount}-1" name="max_values[${ruleCount}][]" placeholder="Enter maximum value">
-                        </div>
-                        <div class="form-group flex-item comparison-condition" style="display: none;">
-                            <label for="operator-comparison-${ruleCount}-1">Operator:</label>
-                            <select class="form-control operator" id="operator-comparison-${ruleCount}-1" name="operators[${ruleCount}][]">
-                                <option value="greater">></option>
-                                <option value="less"><</option>
-                                <option value="equal">=</option>
-                            </select>
-                        </div>
-                        <div class="form-group flex-item comparison-condition" style="display: none;">
-                            <label for="value-comparison-${ruleCount}-1">Value:</label>
-                            <input type="number" class="form-control comparison-value" id="value-comparison-${ruleCount}-1" name="comparison_values[${ruleCount}][]" placeholder="Enter value">
-                        </div>
-                        <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                            <label for="time-${ruleCount}-1">Time:</label>
-                            <input type="number" class="form-control time-value" id="time-${ruleCount}-1" name="time_values[${ruleCount}][]" placeholder="Enter time">
-                        </div>
-                        <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                            <label for="operator-time-${ruleCount}-1">Operator:</label>
-                            <select class="form-control operator" id="operator-time-${ruleCount}-1" name="operators[${ruleCount}][]">
-                                <option value="greater">></option>
-                                <option value="less"><</option>
-                                <option value="equal">=</option>
-                                <option value="greater or equal">>=</option>
-                                <option value="less or equal"><=</option>
-                            </select>
-                        </div>
-                        <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                            <label for="value-time-${ruleCount}-1">Value in TDC:</label>
-                            <input type="number" class="form-control comparison-value" id="value-time-${ruleCount}-1" name="comparison_values[${ruleCount}][]" placeholder="Enter value">
-                        </div>
-                        <div class="form-group flex-item">
-                            <label for="unit-${ruleCount}-1">Unit:</label>
-                            <select class="form-control unit" id="unit-${ruleCount}-1" name="units[${ruleCount}][]">
-                                <option value="mg/dL">mg/dL</option>
-                                <option value="g/dL">g/dL</option>
-                                <option value="mmHg">mmHg</option>
-                                <option value="%">%</option>
-                                <option value="bpm">bpm</option>
-                            </select>
-                        </div>
-                        <div class="form-group flex-item">
-                            <label for="age-min-${ruleCount}-1">Age Range:</label>
-                            <input type="number" class="form-control age-min" id="age-min-${ruleCount}-1" name="age_min[${ruleCount}][]" placeholder="From Age" min="0" required>
-                        </div>
-                        <div class="form-group flex-item">
-                            <label for="age-max-${ruleCount}-1">Age Range:</label>
-                            <input type="number" class="form-control age-max" id="age-max-${ruleCount}-1" name="age_max[${ruleCount}][]" placeholder="To Age" min="0" required>
-                        </div>
-                        <div class="form-group flex-item">
-                            <label for="gender-${ruleCount}-1">Gender:</label>
-                            <select class="form-control gender" id="gender-${ruleCount}-1" name="genders[${ruleCount}][]" required>
-                                <option value="all">ALL</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="center-buttons">
-                        <button type="button" class="btn btn-danger remove-condition" style="display: none;">Remove Condition</button>
-                    </div>
-                </div>
-            </div>
-            <div class="center-buttons">
-                <button type="button" class="btn btn-primary add-condition" data-rule="${ruleCount}">Add Condition</button>
-                <button type="button" class="btn btn-danger remove-rule" style="display: block;">Remove Rule</button>
-            </div>
-        </div>
-    `;
-    $('#rules').append(ruleHtml);
-    updateRemoveButtons();
-    initializeConditionFields();
-});
-
-
-// Add new condition
-$(document).on('click', '.add-condition', function () {
-    const ruleId = $(this).data('rule');
-    conditionCount++;
-    const conditionHtml = `
-        <div class="condition-group" id="condition-${ruleId}-${conditionCount}">
-            <h6>Condition ${conditionCount}</h6>
-            <div class="flex-container">
-                <div class="form-group flex-item">
-                    <label for="condition-type-${ruleId}-${conditionCount}">Condition Type:</label>
-                    <select class="form-control condition-type" id="condition-type-${ruleId}-${conditionCount}" name="conditions[${ruleId}][]">
-                        <option value="range">Range Condition</option>
-                        <option value="comparison">Comparison Condition</option>
-                        <option value="time-dependent">Time-Dependent Condition</option>
-                    </select>
-                </div>
-                <div class="form-group flex-item">
-                    <label for="parameter-${ruleId}-${conditionCount}">Parameter:</label>
-                    <select class="form-control parameter" id="parameter-${ruleId}-${conditionCount}" name="parameters[${ruleId}][]">
-                        <option value="Hemoglobin">Hemoglobin</option>
-                        <option value="Glucose">Glucose</option>
-                        <option value="Potassium">Potassium</option>
-                        <option value="gl">GL</option>
-                        <option value="Sodium">Sodium</option>
-                    </select>
-                </div>
-                <div class="form-group flex-item range-condition" style="display: none;">
-                    <label for="min-value-${ruleId}-${conditionCount}">Minimum Value:</label>
-                    <input type="number" class="form-control min-value" id="min-value-${ruleId}-${conditionCount}" name="min_values[${ruleId}][]" placeholder="Enter minimum value">
-                </div>
-                <div class="form-group flex-item range-condition" style="display: none;">
-                    <label for="max-value-${ruleId}-${conditionCount}">Maximum Value:</label>
-                    <input type="number" class="form-control max-value" id="max-value-${ruleId}-${conditionCount}" name="max_values[${ruleId}][]" placeholder="Enter maximum value">
-                </div>
-                <div class="form-group flex-item comparison-condition" style="display: none;">
-                    <label for="operator-${ruleId}-${conditionCount}">Operator:</label>
-                    <select class="form-control operator" id="operator-${ruleId}-${conditionCount}" name="operators[${ruleId}][]">
-                        <option value="greater">></option>
-                        <option value="less"><</option>
-                        <option value="equal">=</option>
-                    </select>
-                </div>
-                <div class="form-group flex-item comparison-condition" style="display: none;">
-                    <label for="value-${ruleId}-${conditionCount}">Value:</label>
-                    <input type="number" class="form-control comparison-value" id="value-${ruleId}-${conditionCount}" name="comparison_values[${ruleId}][]" placeholder="Enter value">
-                </div>
-                <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                    <label for="time-${ruleId}-${conditionCount}">Time:</label>
-                    <input type="number" class="form-control time-value" id="time-${ruleId}-${conditionCount}" name="time_values[${ruleId}][]" placeholder="Enter time">
-                </div>
-                <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                    <label for="operator-${ruleId}-${conditionCount}">Operator:</label>
-                    <select class="form-control operator" id="operator-${ruleId}-${conditionCount}" name="operators[${ruleId}][]">
-                        <option value="greater">></option>
-                        <option value="less"><</option>
-                        <option value="equal">=</option>
-                        <option value="greater or equal">>=</option>
-                        <option value="less or equal"><=</option>
-                    </select>
-                </div>
-                <div class="form-group flex-item time-dependent-condition" style="display: none;">
-                    <label for="value-${ruleId}-${conditionCount}">Value in TDC:</label>
-                    <input type="number" class="form-control comparison-value" id="value-${ruleId}-${conditionCount}" name="comparison_values[${ruleId}][]" placeholder="Enter value">
-                </div>
-                <div class="form-group flex-item">
-                    <label for="unit-${ruleId}-${conditionCount}">Unit:</label>
-                    <select class="form-control unit" id="unit-${ruleId}-${conditionCount}" name="units[${ruleId}][]">
-                        <option value="mg/dL">mg/dL</option>
-                        <option value="g/dL">g/dL</option>
-                        <option value="mmHg">mmHg</option>
-                        <option value="%">%</option>
-                        <option value="bpm">bpm</option>
-                    </select>
-                </div>
-                <div class="form-group flex-item">
-                    <label for="age-min-${ruleId}-${conditionCount}">Age Range:</label>
-                    <input type="number" class="form-control age-min" id="age-min-${ruleId}-${conditionCount}" name="age_min[${ruleId}][]" placeholder="From Age" min="0" required>
-                </div>
-                <div class="form-group flex-item">
-                    <label for="age-max-${ruleId}-${conditionCount}">Age Range:</label>
-                    <input type="number" class="form-control age-max" id="age-max-${ruleId}-${conditionCount}" name="age_max[${ruleId}][]" placeholder="To Age" min="0" required>
-                </div>
-                <div class="form-group flex-item">
-                    <label for="gender-${ruleId}-${conditionCount}">Gender:</label>
-                    <select class="form-control gender" id="gender-${ruleId}-${conditionCount}" name="genders[${ruleId}][]" required>
-                        <option value="all">ALL</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>
-            </div>
-            <div class="center-buttons">
-                <button type="button" class="btn btn-danger remove-condition" style="display: block;">Remove Condition</button>
-            </div>
-        </div>
-    `;
-    $(`#conditions-${ruleId}`).append(conditionHtml);
-    updateRemoveButtons();
-    initializeConditionFields();
-});
-
-        // Remove condition
-        $(document).on('click', '.remove-condition', function () {
-            $(this).closest('.condition-group').remove();
-            updateRemoveButtons();
-        });
-
-        // Remove rule
-        $(document).on('click', '.remove-rule', function () {
-            $(this).closest('.rule-group').remove();
-            updateRemoveButtons();
-        });
-
-        // Remove disease code
-        $(document).on('click', '.remove-disease-code', function () {
-            $(this).closest('.disease-code').remove(); // Corrected selector
-            updateRemoveButtons();
-        });
-
-        function updateRemoveButtons() {
-    $('.remove-condition').each(function () {
-        if ($(this).closest('.conditions').find('.condition-group').length <= 1) {
-            $(this).hide();
-        } else {
-            $(this).show();
-        }
-    });
-
-    $('.remove-rule').each(function () {
-        if ($(this).closest('#rules').find('.rule-group').length <= 1) {
-            $(this).hide();
-        } else {
-            $(this).show();
-        }
-    });
-
-    $('.remove-disease-code').each(function () {
-        if ($(this).closest('#disease-codes').find('.disease-code').length <= 1) { // Corrected selector
-            $(this).hide();
-        } else {
-            $(this).show();
-        }
-    });
-}
-
-        initializeConditionFields();
-
-</script>
-
-        <!-- Message Section -->
-        <div id="message" class="alert" style="display: none; padding: 10px; border-radius: 5px;"></div>
-        
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const form = document.getElementById('rule-form');
-                form.addEventListener('submit', function(event) {
-                    event.preventDefault(); // Prevent the default form submission
-            
-                    const formData = new FormData(form);
-                    fetch('/rulebase', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        const messageDiv = document.getElementById('message');
-                        messageDiv.style.display = 'block'; // Make the message div visible
-                        if (data.message.includes('successfully')) {
-                            messageDiv.style.backgroundColor = 'green';
-                            messageDiv.style.color = 'white';
-                        } else {
-                            messageDiv.style.backgroundColor = 'red';
-                            messageDiv.style.color = 'white';
-                        }
-                        messageDiv.textContent = data.message;
-                    })
-                    .catch(error => {
-                        const messageDiv = document.getElementById('message');
-                        messageDiv.style.display = 'block'; // Make the message div visible
-                        messageDiv.style.backgroundColor = 'red';
-                        messageDiv.style.color = 'white';
-                        messageDiv.textContent = 'An error occurred: ' + error.message;
-                    });
-                });
-            });
-            </script>
-
+    </script>
 </body>
 </html>
-
-
